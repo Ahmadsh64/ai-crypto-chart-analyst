@@ -1,0 +1,935 @@
+{
+  "metadata": {
+    "report_id": "rep_41f2ef7adad64d16",
+    "report_version": "backtest-report-v1.0.0",
+    "session_id": "rp_443c4e385b574481",
+    "generated_at": "2026-11-14T10:02:18.625940Z",
+    "replay_timestamp": "2024-01-01T03:59:59.999000Z",
+    "event_index": 47,
+    "event_count": 48,
+    "exchange": "binance",
+    "symbol": "BTC/USDT",
+    "market_type": "spot",
+    "timeframes": [
+      "4h",
+      "1h",
+      "15m",
+      "5m"
+    ],
+    "replay_start": "2024-01-01T00:00:00Z",
+    "replay_end": "2024-01-01T04:00:00Z",
+    "status": "ready",
+    "data_quality": "ok",
+    "initial_equity": "10000.0",
+    "initial_equity_source": "configured",
+    "quote_currency": "USDT",
+    "disclaimer": "HISTORICAL BACKTEST \u2014 SIMULATED RESULTS \u2014 NOT REAL ORDERS \u2014 NOT FINANCIAL ADVICE",
+    "filter_context": {
+      "exchange": null,
+      "symbol": null,
+      "market_type": null,
+      "direction": null,
+      "exit_type": null,
+      "start_time": null,
+      "end_time": null
+    },
+    "cost_model_version": "execution-costs-v1.0.0-balanced",
+    "analytics_version": "performance-analytics-v1.0.0-balanced"
+  },
+  "summary": {
+    "completed_trade_count": 4,
+    "total_simulated_trades": 6,
+    "winning_trades": 2,
+    "losing_trades": 2,
+    "break_even_trades": 0,
+    "partially_closed_trades": 1,
+    "open_trades": 1,
+    "excluded_open_trades": 1,
+    "excluded_partial_trades": 1,
+    "win_rate": {
+      "value": "50.00000000",
+      "availability": "available",
+      "label": null
+    },
+    "profit_factor": {
+      "value": "2.60113684",
+      "availability": "available",
+      "label": null
+    },
+    "average_net_pnl_per_completed": {
+      "value": "5.16975401",
+      "availability": "available",
+      "label": null
+    },
+    "average_r_multiple": {
+      "value": "0.66409052",
+      "availability": "available",
+      "label": null
+    },
+    "gross_pnl": "22.36700115",
+    "net_pnl": "20.67901605",
+    "total_fees": "1.05498625",
+    "total_slippage": "0.52750000",
+    "total_spread_cost": "0.10549885",
+    "total_execution_costs": "1.68798510",
+    "initial_equity": "10000.0",
+    "ending_equity": {
+      "value": "10020.67901605",
+      "availability": "available",
+      "label": null
+    },
+    "current_equity": {
+      "value": "10020.67901605",
+      "availability": "available",
+      "label": null
+    },
+    "total_return_pct": {
+      "value": "0.20679016",
+      "availability": "available",
+      "label": null
+    },
+    "max_drawdown": "12.91520843",
+    "max_drawdown_pct": {
+      "value": "0.12915208",
+      "availability": "available",
+      "label": null
+    },
+    "current_drawdown": "0E-8",
+    "recovery_timestamp": "2024-01-01T00:45:00Z",
+    "peak_timestamp": null,
+    "trough_timestamp": "2024-01-01T00:42:00Z",
+    "key_metrics": [
+      {
+        "key": "net_pnl",
+        "label": "Net P&L",
+        "value": "20.67901605",
+        "availability": "available",
+        "unit": ""
+      },
+      {
+        "key": "gross_pnl",
+        "label": "Gross P&L",
+        "value": "22.36700115",
+        "availability": "available",
+        "unit": ""
+      },
+      {
+        "key": "win_rate",
+        "label": "Win Rate",
+        "value": "50.00000000",
+        "availability": "available",
+        "unit": "%"
+      },
+      {
+        "key": "profit_factor",
+        "label": "Profit Factor",
+        "value": "2.60113684",
+        "availability": "available",
+        "unit": ""
+      },
+      {
+        "key": "average_r_multiple",
+        "label": "Average R",
+        "value": "0.66409052",
+        "availability": "available",
+        "unit": ""
+      },
+      {
+        "key": "max_drawdown",
+        "label": "Max Drawdown",
+        "value": "12.91520843",
+        "availability": "available",
+        "unit": ""
+      },
+      {
+        "key": "max_drawdown_pct",
+        "label": "Max Drawdown %",
+        "value": "0.12915208",
+        "availability": "available",
+        "unit": "%"
+      },
+      {
+        "key": "ending_equity",
+        "label": "Ending Equity",
+        "value": "10020.67901605",
+        "availability": "available",
+        "unit": ""
+      },
+      {
+        "key": "total_execution_costs",
+        "label": "Total Execution Costs",
+        "value": "1.68798510",
+        "availability": "available",
+        "unit": ""
+      }
+    ]
+  },
+  "performance_summary": {
+    "session_id": "rp_443c4e385b574481",
+    "enabled": true,
+    "analytics_version": "performance-analytics-v1.0.0-balanced",
+    "cost_model_version": "execution-costs-v1.0.0-balanced",
+    "replay_timestamp": "2024-01-01T03:59:59.999000Z",
+    "event_index": 47,
+    "quote_currency": "USDT",
+    "initial_equity": "10000.0",
+    "initial_equity_source": "configured",
+    "trade_stats": {
+      "total_simulated_trades": 6,
+      "completed_trades": 4,
+      "open_trades": 1,
+      "partially_closed_trades": 1,
+      "winning_trades": 2,
+      "losing_trades": 2,
+      "break_even_trades": 0,
+      "win_rate": {
+        "value": "50.00000000",
+        "availability": "available",
+        "label": null
+      },
+      "loss_rate": {
+        "value": "50.00000000",
+        "availability": "available",
+        "label": null
+      },
+      "average_winning_trade": {
+        "value": "16.79711224",
+        "availability": "available",
+        "label": null
+      },
+      "average_losing_trade": {
+        "value": "-6.45760422",
+        "availability": "available",
+        "label": null
+      },
+      "largest_winning_trade": {
+        "value": "19.06721398",
+        "availability": "available",
+        "label": null
+      },
+      "largest_losing_trade": {
+        "value": "-7.47740492",
+        "availability": "available",
+        "label": null
+      }
+    },
+    "profitability": {
+      "total_gross_realized_pnl": "22.36700115",
+      "total_net_realized_pnl": "20.67901605",
+      "total_trading_fees": "1.05498625",
+      "total_slippage": "0.52750000",
+      "total_spread_costs": "0.10549885",
+      "total_execution_costs": "1.68798510",
+      "average_net_pnl_per_completed": {
+        "value": "5.16975401",
+        "availability": "available",
+        "label": null
+      },
+      "profit_factor": {
+        "value": "2.60113684",
+        "availability": "available",
+        "label": null
+      },
+      "gross_profit": "33.59422448",
+      "gross_loss": "-12.91520843"
+    },
+    "risk_reward": {
+      "average_r_multiple": {
+        "value": "0.66409052",
+        "availability": "available",
+        "label": null
+      },
+      "median_r_multiple": {
+        "value": "0.41926035",
+        "availability": "available",
+        "label": null
+      },
+      "best_r_multiple": {
+        "value": "2.90540210",
+        "availability": "available",
+        "label": null
+      },
+      "worst_r_multiple": {
+        "value": "-1.08756070",
+        "availability": "available",
+        "label": null
+      },
+      "avg_win_loss_ratio": {
+        "value": "2.60113684",
+        "availability": "available",
+        "label": null
+      },
+      "r_multiple_sample_count": 4,
+      "missing_risk_metadata_count": 0
+    },
+    "returns": {
+      "initial_equity": "10000.0",
+      "current_equity": {
+        "value": "10020.67901605",
+        "availability": "available",
+        "label": null
+      },
+      "ending_equity": {
+        "value": "10020.67901605",
+        "availability": "available",
+        "label": null
+      },
+      "total_return_pct": {
+        "value": "0.20679016",
+        "availability": "available",
+        "label": null
+      },
+      "average_trade_return_pct": {
+        "value": "0.05169754",
+        "availability": "available",
+        "label": null
+      },
+      "best_trade_return_pct": {
+        "value": "0.19067214",
+        "availability": "available",
+        "label": null
+      },
+      "worst_trade_return_pct": {
+        "value": "-0.07477405",
+        "availability": "available",
+        "label": null
+      }
+    },
+    "drawdown": {
+      "available": true,
+      "unavailable_reason": null,
+      "absolute_drawdown": "0E-8",
+      "drawdown_pct": {
+        "value": "0E-8",
+        "availability": "available",
+        "label": null
+      },
+      "max_drawdown": "12.91520843",
+      "max_drawdown_pct": {
+        "value": "0.12915208",
+        "availability": "available",
+        "label": null
+      },
+      "peak_timestamp": null,
+      "trough_timestamp": "2024-01-01T00:42:00Z",
+      "recovery_timestamp": "2024-01-01T00:45:00Z",
+      "current_drawdown": "0E-8",
+      "current_drawdown_pct": {
+        "value": "0E-8",
+        "availability": "available",
+        "label": null
+      },
+      "series": [
+        {
+          "timestamp": "2024-01-01T00:38:00Z",
+          "equity": "9992.52259508",
+          "peak_equity": "10000.0",
+          "drawdown": "7.47740492",
+          "drawdown_pct": "0.07477405"
+        },
+        {
+          "timestamp": "2024-01-01T00:42:00Z",
+          "equity": "9987.08479157",
+          "peak_equity": "10000.0",
+          "drawdown": "12.91520843",
+          "drawdown_pct": "0.12915208"
+        },
+        {
+          "timestamp": "2024-01-01T00:45:00Z",
+          "equity": "10001.61180207",
+          "peak_equity": "10001.61180207",
+          "drawdown": "0E-8",
+          "drawdown_pct": "0E-8"
+        },
+        {
+          "timestamp": "2024-01-01T00:50:00Z",
+          "equity": "10020.67901605",
+          "peak_equity": "10020.67901605",
+          "drawdown": "0E-8",
+          "drawdown_pct": "0E-8"
+        }
+      ]
+    },
+    "included_completed_trades": 4,
+    "excluded_open_trades": 1,
+    "excluded_partial_trades": 1,
+    "assumptions": [
+      "Performance metrics use NET realized P&L from the execution cost engine.",
+      "Completed-trade statistics exclude open and partially closed trades.",
+      "Maker/taker classification is estimated from OHLCV fill context, not exchange-confirmed.",
+      "Spread is a SYNTHETIC ASSUMPTION \u2014 not observed historical bid/ask."
+    ],
+    "warnings": [
+      "Maker/taker unknown from OHLCV; applied assume_taker fallback (estimated)."
+    ],
+    "disclaimer": "HISTORICAL BACKTEST \u2014 SIMULATED RESULTS \u2014 NOT FINANCIAL ADVICE. Metrics derive from hypothetical historical simulation and estimated costs.",
+    "filter_context": {
+      "exchange": null,
+      "symbol": null,
+      "market_type": null,
+      "direction": null,
+      "exit_type": null,
+      "start_time": null,
+      "end_time": null
+    },
+    "config": {
+      "config_version": "performance-analytics-v1.0.0-balanced",
+      "enabled": true,
+      "initial_equity": "10000.0",
+      "quote_currency": "USDT",
+      "include_closed_only_for_stats": true,
+      "include_partial_realized_in_cashflow": true,
+      "include_ambiguous_as_closed_when_flat": true,
+      "equity_curve_mode": "completed_trade",
+      "drawdown_mode": "absolute_and_percent",
+      "time_group_period": "daily",
+      "display_timezone": "UTC",
+      "group_by_symbol": true,
+      "group_by_timeframe": true,
+      "group_by_direction": true,
+      "group_by_period": true,
+      "group_by_exit_type": true,
+      "disclaimer": "HISTORICAL BACKTEST \u2014 SIMULATED RESULTS \u2014 NOT FINANCIAL ADVICE. Metrics derive from hypothetical historical simulation and estimated costs."
+    }
+  },
+  "equity": {
+    "completed": {
+      "mode": "completed_trade",
+      "points": [
+        {
+          "timestamp": "2024-01-01T00:38:00Z",
+          "trade_id": "fx_short_sl",
+          "event_id": null,
+          "net_pnl_change": "-7.47740492",
+          "cumulative_net_pnl": "-7.47740492",
+          "equity": "9992.52259508",
+          "completed_trade_count": 1,
+          "curve": "completed_trade"
+        },
+        {
+          "timestamp": "2024-01-01T00:42:00Z",
+          "trade_id": "fx_long_sl",
+          "event_id": null,
+          "net_pnl_change": "-5.43780351",
+          "cumulative_net_pnl": "-12.91520843",
+          "equity": "9987.08479157",
+          "completed_trade_count": 2,
+          "curve": "completed_trade"
+        },
+        {
+          "timestamp": "2024-01-01T00:45:00Z",
+          "trade_id": "fx_long_partials",
+          "event_id": null,
+          "net_pnl_change": "14.52701050",
+          "cumulative_net_pnl": "1.61180207",
+          "equity": "10001.61180207",
+          "completed_trade_count": 3,
+          "curve": "completed_trade"
+        },
+        {
+          "timestamp": "2024-01-01T00:50:00Z",
+          "trade_id": "fx_long_win",
+          "event_id": null,
+          "net_pnl_change": "19.06721398",
+          "cumulative_net_pnl": "20.67901605",
+          "equity": "10020.67901605",
+          "completed_trade_count": 4,
+          "curve": "completed_trade"
+        }
+      ],
+      "available": true,
+      "unavailable_reason": null,
+      "initial_equity": "10000.0",
+      "ending_equity": "10020.67901605",
+      "cumulative_net_pnl": "20.67901605"
+    },
+    "cashflow": {
+      "mode": "realized_cashflow",
+      "points": [
+        {
+          "timestamp": "2024-01-01T00:32:00Z",
+          "trade_id": "fx_long_partials",
+          "event_id": "lp_p1",
+          "net_pnl_change": "4.73900100",
+          "cumulative_net_pnl": "4.73900100",
+          "equity": "10004.73900100",
+          "completed_trade_count": 1,
+          "curve": "realized_cashflow"
+        },
+        {
+          "timestamp": "2024-01-01T00:35:00Z",
+          "trade_id": "fx_partial_open",
+          "event_id": "po_p",
+          "net_pnl_change": "4.73150092",
+          "cumulative_net_pnl": "9.47050192",
+          "equity": "10009.47050192",
+          "completed_trade_count": 2,
+          "curve": "realized_cashflow"
+        },
+        {
+          "timestamp": "2024-01-01T00:38:00Z",
+          "trade_id": "fx_short_sl",
+          "event_id": "ss_x",
+          "net_pnl_change": "-7.47740492",
+          "cumulative_net_pnl": "1.99309700",
+          "equity": "10001.99309700",
+          "completed_trade_count": 3,
+          "curve": "realized_cashflow"
+        },
+        {
+          "timestamp": "2024-01-01T00:42:00Z",
+          "trade_id": "fx_long_sl",
+          "event_id": "ll_x",
+          "net_pnl_change": "-5.43780351",
+          "cumulative_net_pnl": "-3.44470651",
+          "equity": "9996.55529349",
+          "completed_trade_count": 4,
+          "curve": "realized_cashflow"
+        },
+        {
+          "timestamp": "2024-01-01T00:45:00Z",
+          "trade_id": "fx_long_partials",
+          "event_id": "lp_c",
+          "net_pnl_change": "9.78800950",
+          "cumulative_net_pnl": "6.34330299",
+          "equity": "10006.34330299",
+          "completed_trade_count": 4,
+          "curve": "realized_cashflow"
+        },
+        {
+          "timestamp": "2024-01-01T00:50:00Z",
+          "trade_id": "fx_long_win",
+          "event_id": "lw_x",
+          "net_pnl_change": "19.06721398",
+          "cumulative_net_pnl": "25.41051697",
+          "equity": "10025.41051697",
+          "completed_trade_count": 5,
+          "curve": "realized_cashflow"
+        }
+      ],
+      "available": true,
+      "unavailable_reason": null,
+      "initial_equity": "10000.0",
+      "ending_equity": "10025.41051697",
+      "cumulative_net_pnl": "25.41051697"
+    }
+  },
+  "drawdown": {
+    "summary": {
+      "available": true,
+      "unavailable_reason": null,
+      "absolute_drawdown": "0E-8",
+      "drawdown_pct": {
+        "value": "0E-8",
+        "availability": "available",
+        "label": null
+      },
+      "max_drawdown": "12.91520843",
+      "max_drawdown_pct": {
+        "value": "0.12915208",
+        "availability": "available",
+        "label": null
+      },
+      "peak_timestamp": null,
+      "trough_timestamp": "2024-01-01T00:42:00Z",
+      "recovery_timestamp": "2024-01-01T00:45:00Z",
+      "current_drawdown": "0E-8",
+      "current_drawdown_pct": {
+        "value": "0E-8",
+        "availability": "available",
+        "label": null
+      },
+      "series": [
+        {
+          "timestamp": "2024-01-01T00:38:00Z",
+          "equity": "9992.52259508",
+          "peak_equity": "10000.0",
+          "drawdown": "7.47740492",
+          "drawdown_pct": "0.07477405"
+        },
+        {
+          "timestamp": "2024-01-01T00:42:00Z",
+          "equity": "9987.08479157",
+          "peak_equity": "10000.0",
+          "drawdown": "12.91520843",
+          "drawdown_pct": "0.12915208"
+        },
+        {
+          "timestamp": "2024-01-01T00:45:00Z",
+          "equity": "10001.61180207",
+          "peak_equity": "10001.61180207",
+          "drawdown": "0E-8",
+          "drawdown_pct": "0E-8"
+        },
+        {
+          "timestamp": "2024-01-01T00:50:00Z",
+          "equity": "10020.67901605",
+          "peak_equity": "10020.67901605",
+          "drawdown": "0E-8",
+          "drawdown_pct": "0E-8"
+        }
+      ]
+    },
+    "points": [
+      {
+        "timestamp": "2024-01-01T00:38:00Z",
+        "equity": "9992.52259508",
+        "peak_equity": "10000.0",
+        "drawdown": "7.47740492",
+        "drawdown_pct": "0.07477405"
+      },
+      {
+        "timestamp": "2024-01-01T00:42:00Z",
+        "equity": "9987.08479157",
+        "peak_equity": "10000.0",
+        "drawdown": "12.91520843",
+        "drawdown_pct": "0.12915208"
+      },
+      {
+        "timestamp": "2024-01-01T00:45:00Z",
+        "equity": "10001.61180207",
+        "peak_equity": "10001.61180207",
+        "drawdown": "0E-8",
+        "drawdown_pct": "0E-8"
+      },
+      {
+        "timestamp": "2024-01-01T00:50:00Z",
+        "equity": "10020.67901605",
+        "peak_equity": "10020.67901605",
+        "drawdown": "0E-8",
+        "drawdown_pct": "0E-8"
+      }
+    ]
+  },
+  "groups": {
+    "by_symbol": [
+      {
+        "key": "BTC/USDT",
+        "completed_trades": 4,
+        "win_rate": {
+          "value": "50.00000000",
+          "availability": "available",
+          "label": null
+        },
+        "net_pnl": "20.67901605",
+        "profit_factor": {
+          "value": "2.60113684",
+          "availability": "available",
+          "label": null
+        },
+        "average_net_trade": {
+          "value": "5.16975401",
+          "availability": "available",
+          "label": null
+        },
+        "average_r_multiple": {
+          "value": "0.66409052",
+          "availability": "available",
+          "label": null
+        }
+      }
+    ],
+    "by_timeframe": [],
+    "by_direction": [
+      {
+        "key": "LONG",
+        "completed_trades": 3,
+        "win_rate": {
+          "value": "66.66666667",
+          "availability": "available",
+          "label": null
+        },
+        "net_pnl": "28.15642097",
+        "profit_factor": {
+          "value": "6.17790334",
+          "availability": "available",
+          "label": null
+        },
+        "average_net_trade": {
+          "value": "9.38547366",
+          "availability": "available",
+          "label": null
+        },
+        "average_r_multiple": {
+          "value": "1.24152093",
+          "availability": "available",
+          "label": null
+        }
+      },
+      {
+        "key": "SHORT",
+        "completed_trades": 1,
+        "win_rate": {
+          "value": "0E-8",
+          "availability": "available",
+          "label": null
+        },
+        "net_pnl": "-7.47740492",
+        "profit_factor": {
+          "value": "0E-8",
+          "availability": "available",
+          "label": null
+        },
+        "average_net_trade": {
+          "value": "-7.47740492",
+          "availability": "available",
+          "label": null
+        },
+        "average_r_multiple": {
+          "value": "-1.06820070",
+          "availability": "available",
+          "label": null
+        }
+      }
+    ],
+    "by_period": [
+      {
+        "key": "2024-01-01",
+        "completed_trades": 4,
+        "win_rate": {
+          "value": "50.00000000",
+          "availability": "available",
+          "label": null
+        },
+        "net_pnl": "20.67901605",
+        "profit_factor": {
+          "value": "2.60113684",
+          "availability": "available",
+          "label": null
+        },
+        "average_net_trade": {
+          "value": "5.16975401",
+          "availability": "available",
+          "label": null
+        },
+        "average_r_multiple": {
+          "value": "0.66409052",
+          "availability": "available",
+          "label": null
+        }
+      }
+    ],
+    "by_exit_type": [
+      {
+        "key": "sl",
+        "completed_trades": 2,
+        "win_rate": {
+          "value": "0E-8",
+          "availability": "available",
+          "label": null
+        },
+        "net_pnl": "-12.91520843",
+        "profit_factor": {
+          "value": "0E-8",
+          "availability": "available",
+          "label": null
+        },
+        "average_net_trade": {
+          "value": "-6.45760422",
+          "availability": "available",
+          "label": null
+        },
+        "average_r_multiple": {
+          "value": "-1.07788070",
+          "availability": "available",
+          "label": null
+        }
+      },
+      {
+        "key": "tp",
+        "completed_trades": 2,
+        "win_rate": {
+          "value": "100.00000000",
+          "availability": "available",
+          "label": null
+        },
+        "net_pnl": "33.59422448",
+        "profit_factor": {
+          "value": null,
+          "availability": "infinite",
+          "label": "no_losing_trades"
+        },
+        "average_net_trade": {
+          "value": "16.79711224",
+          "availability": "available",
+          "label": null
+        },
+        "average_r_multiple": {
+          "value": "2.40606175",
+          "availability": "available",
+          "label": null
+        }
+      }
+    ],
+    "timeframe_unavailable_reason": "SimulatedTrade does not store a signal timeframe; timeframe grouping is unavailable.",
+    "warnings": [
+      "SimulatedTrade does not store a signal timeframe; timeframe grouping is unavailable."
+    ]
+  },
+  "completed_trades": [
+    {
+      "trade_id": "fx_long_partials",
+      "symbol": "BTC/USDT",
+      "direction": "LONG",
+      "lifecycle_status": "closed_tp",
+      "analytics_class": "closed",
+      "exit_type": "tp",
+      "included_in_completed_stats": true,
+      "entry_timestamp": "2024-01-01T00:21:00Z",
+      "exit_timestamp": "2024-01-01T00:45:00Z",
+      "entry_price": "100.0",
+      "average_exit_price": "114.93100575",
+      "average_exit_price_source": "ledger_vwap",
+      "original_quantity": "1.0",
+      "executed_quantity": "1.0",
+      "remaining_quantity": "0.0",
+      "initial_stop_loss": "95.0",
+      "current_stop_loss": "95.0",
+      "take_profit_levels": [
+        "110.0",
+        "120.0"
+      ],
+      "gross_realized_pnl": "14.87100075",
+      "net_realized_pnl": "14.52701050",
+      "fees": "0.21499100",
+      "slippage": "0.10750000",
+      "spread_cost": "0.02149925",
+      "r_multiple": "2.90540210"
+    },
+    {
+      "trade_id": "fx_short_sl",
+      "symbol": "BTC/USDT",
+      "direction": "SHORT",
+      "lifecycle_status": "closed_sl",
+      "analytics_class": "closed",
+      "exit_type": "sl",
+      "included_in_completed_stats": true,
+      "entry_timestamp": "2024-01-01T00:23:00Z",
+      "exit_timestamp": "2024-01-01T00:38:00Z",
+      "entry_price": "105.0",
+      "average_exit_price": "112.06720560",
+      "average_exit_price_source": "ledger_vwap",
+      "original_quantity": "1.0",
+      "executed_quantity": "1.0",
+      "remaining_quantity": "0.0",
+      "initial_stop_loss": "112.0",
+      "current_stop_loss": "112.0",
+      "take_profit_levels": [
+        "98.0"
+      ],
+      "gross_realized_pnl": "-7.13020035",
+      "net_realized_pnl": "-7.47740492",
+      "fees": "0.21700422",
+      "slippage": "0.10850000",
+      "spread_cost": "0.02170035",
+      "r_multiple": "-1.06820070"
+    },
+    {
+      "trade_id": "fx_long_win",
+      "symbol": "BTC/USDT",
+      "direction": "LONG",
+      "lifecycle_status": "closed_tp",
+      "analytics_class": "closed",
+      "exit_type": "tp",
+      "included_in_completed_stats": true,
+      "entry_timestamp": "2024-01-01T00:25:00Z",
+      "exit_timestamp": "2024-01-01T00:50:00Z",
+      "entry_price": "101.0",
+      "average_exit_price": "110.93340555",
+      "average_exit_price_source": "ledger_vwap",
+      "original_quantity": "2.0",
+      "executed_quantity": "2.0",
+      "remaining_quantity": "0.0",
+      "initial_stop_loss": "96.0",
+      "current_stop_loss": "96.0",
+      "take_profit_levels": [
+        "111.0"
+      ],
+      "gross_realized_pnl": "19.74560100",
+      "net_realized_pnl": "19.06721398",
+      "fees": "0.42398802",
+      "slippage": "0.21200000",
+      "spread_cost": "0.04239900",
+      "r_multiple": "1.90672140"
+    },
+    {
+      "trade_id": "fx_long_sl",
+      "symbol": "BTC/USDT",
+      "direction": "LONG",
+      "lifecycle_status": "closed_sl",
+      "analytics_class": "closed",
+      "exit_type": "sl",
+      "included_in_completed_stats": true,
+      "entry_timestamp": "2024-01-01T00:27:00Z",
+      "exit_timestamp": "2024-01-01T00:42:00Z",
+      "entry_price": "102.0",
+      "average_exit_price": "96.94180485",
+      "average_exit_price_source": "ledger_vwap",
+      "original_quantity": "1.0",
+      "executed_quantity": "1.0",
+      "remaining_quantity": "0.0",
+      "initial_stop_loss": "97.0",
+      "current_stop_loss": "97.0",
+      "take_profit_levels": [
+        "115.0"
+      ],
+      "gross_realized_pnl": "-5.11940025",
+      "net_realized_pnl": "-5.43780351",
+      "fees": "0.19900301",
+      "slippage": "0.09950000",
+      "spread_cost": "0.01990025",
+      "r_multiple": "-1.08756070"
+    }
+  ],
+  "completed_trade_total": 4,
+  "completed_trades_truncated": false,
+  "open_trades": [
+    {
+      "trade_id": "fx_partial_open",
+      "symbol": "BTC/USDT",
+      "direction": "LONG",
+      "lifecycle_status": "partially_closed",
+      "analytics_class": "partially_closed",
+      "entry_timestamp": "2024-01-01T00:29:00Z",
+      "entry_price": "103.0",
+      "original_quantity": "1.0",
+      "remaining_quantity": "0.5",
+      "executed_quantity": "0.5",
+      "initial_stop_loss": "98.0",
+      "current_stop_loss": "98.0",
+      "take_profit_levels": [
+        "113.0",
+        "123.0"
+      ],
+      "unrealized_note": "Open or incomplete \u2014 not included in completed-trade metrics."
+    },
+    {
+      "trade_id": "fx_open",
+      "symbol": "BTC/USDT",
+      "direction": "LONG",
+      "lifecycle_status": "open",
+      "analytics_class": "open",
+      "entry_timestamp": "2024-01-01T00:31:00Z",
+      "entry_price": "104.0",
+      "original_quantity": "1.0",
+      "remaining_quantity": "1.0",
+      "executed_quantity": "0.0",
+      "initial_stop_loss": "99.0",
+      "current_stop_loss": "99.0",
+      "take_profit_levels": [
+        "114.0"
+      ],
+      "unrealized_note": "Open or incomplete \u2014 not included in completed-trade metrics."
+    }
+  ],
+  "open_trade_total": 2,
+  "open_trades_truncated": false,
+  "limitations": [],
+  "assumptions": [
+    "Performance metrics use NET realized P&L from the execution cost engine.",
+    "Completed-trade statistics exclude open and partially closed trades.",
+    "Maker/taker classification is estimated from OHLCV fill context, not exchange-confirmed.",
+    "Spread is a SYNTHETIC ASSUMPTION \u2014 not observed historical bid/ask."
+  ],
+  "disclaimer": "HISTORICAL BACKTEST \u2014 SIMULATED RESULTS \u2014 NOT REAL ORDERS \u2014 NOT FINANCIAL ADVICE"
+}

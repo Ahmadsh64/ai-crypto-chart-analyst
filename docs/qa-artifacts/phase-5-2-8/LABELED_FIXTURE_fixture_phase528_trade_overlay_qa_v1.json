@@ -1,0 +1,12 @@
+{
+  "fixture_id": "fixture_phase528_trade_overlay_qa_v1",
+  "label": "LABELED_FIXTURE — test data only — NOT live trading evidence",
+  "description": "Deterministic BTC/USDT 5m candles + simulated trades for Phase 5.2.8 browser visual QA",
+  "timeframe": "5m",
+  "clocks": {
+    "before_entry": "2024-01-01T11:54:59.999Z",
+    "after_entry_before_tp1": "2024-01-01T12:09:59.999Z",
+    "after_tp1_before_tp2": "2024-01-01T12:19:59.999Z",
+    "after_final_exit": "2024-01-01T12:39:59.999Z"
+  }
+}

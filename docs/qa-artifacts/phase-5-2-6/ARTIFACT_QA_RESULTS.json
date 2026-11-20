@@ -1,0 +1,592 @@
+{
+  "fixture_id": "fixture_phase526_export_qa_v1",
+  "label": "LABELED_FIXTURE \u2014 not live trading evidence",
+  "generated_at": "2026-11-14T10:02:18.544423Z",
+  "populated_session_id": "rp_443c4e385b574481",
+  "api_independent": {
+    "completed_trade_count": 4,
+    "winning_trades": 2,
+    "losing_trades": 2,
+    "gross_pnl_sum_trades": "22.36700115",
+    "net_pnl_sum_trades": "20.67901605",
+    "fees_sum_trades": "1.05498625",
+    "slippage_sum_trades": "0.52750000",
+    "spread_sum_trades": "0.10549885",
+    "summary_completed": 4,
+    "summary_wins": 2,
+    "summary_losses": 2,
+    "summary_gross": "22.36700115",
+    "summary_net": "20.67901605",
+    "summary_fees": "1.05498625",
+    "summary_slippage": "0.52750000",
+    "summary_spread": "0.10549885",
+    "summary_ending_equity": "10020.67901605",
+    "summary_max_drawdown": "12.91520843",
+    "summary_win_rate_avail": "available",
+    "summary_pf_avail": "available"
+  },
+  "api_metadata": {
+    "report_id": "rep_41f2ef7adad64d16",
+    "report_version": "backtest-report-v1.0.0",
+    "replay_timestamp": "2024-01-01T03:59:59.999000Z",
+    "disclaimer": "HISTORICAL BACKTEST \u2014 SIMULATED RESULTS \u2014 NOT REAL ORDERS \u2014 NOT FINANCIAL ADVICE",
+    "initial_equity": "10000.0",
+    "completed_in_report": 4,
+    "open_in_report": 2,
+    "equity_points": 4,
+    "ending_equity_curve": "10020.67901605",
+    "max_drawdown_block": {
+      "max_drawdown": "12.91520843",
+      "points": 4
+    }
+  },
+  "csv": {
+    "files": {
+      "summary": {
+        "path": "docs/qa-artifacts/phase-5-2-6/LABELED_FIXTURE_fixture_phase526_export_qa_v1_BTCUSDT_backtest_summary_2026-11-14.csv",
+        "filename": "LABELED_FIXTURE_fixture_phase526_export_qa_v1_BTCUSDT_backtest_summary_2026-11-14.csv",
+        "bytes": 1405
+      },
+      "trades": {
+        "path": "docs/qa-artifacts/phase-5-2-6/LABELED_FIXTURE_fixture_phase526_export_qa_v1_BTCUSDT_backtest_trades_2026-11-14.csv",
+        "filename": "LABELED_FIXTURE_fixture_phase526_export_qa_v1_BTCUSDT_backtest_trades_2026-11-14.csv",
+        "bytes": 2236
+      },
+      "equity": {
+        "path": "docs/qa-artifacts/phase-5-2-6/LABELED_FIXTURE_fixture_phase526_export_qa_v1_BTCUSDT_backtest_equity_2026-11-14.csv",
+        "filename": "LABELED_FIXTURE_fixture_phase526_export_qa_v1_BTCUSDT_backtest_equity_2026-11-14.csv",
+        "bytes": 1796
+      },
+      "drawdown": {
+        "path": "docs/qa-artifacts/phase-5-2-6/LABELED_FIXTURE_fixture_phase526_export_qa_v1_BTCUSDT_backtest_drawdown_2026-11-14.csv",
+        "filename": "LABELED_FIXTURE_fixture_phase526_export_qa_v1_BTCUSDT_backtest_drawdown_2026-11-14.csv",
+        "bytes": 901
+      }
+    },
+    "summary": {
+      "utf8_ok": true,
+      "header": [
+        "metric",
+        "value",
+        "availability",
+        "unit"
+      ],
+      "metric_row_count": 27,
+      "win_rate": {
+        "value": "50.00000000",
+        "availability": "available"
+      },
+      "profit_factor": {
+        "value": "2.60113684",
+        "availability": "available"
+      },
+      "completed_trade_count": {
+        "value": "4",
+        "availability": "available"
+      },
+      "gross_pnl": {
+        "value": "22.36700115",
+        "availability": "available"
+      },
+      "net_pnl": {
+        "value": "20.67901605",
+        "availability": "available"
+      },
+      "total_fees": {
+        "value": "1.05498625",
+        "availability": "available"
+      },
+      "total_slippage": {
+        "value": "0.52750000",
+        "availability": "available"
+      },
+      "total_spread_cost": {
+        "value": "0.10549885",
+        "availability": "available"
+      },
+      "max_drawdown": {
+        "value": "12.91520843",
+        "availability": "available"
+      },
+      "initial_equity": {
+        "value": "10000.0",
+        "availability": "available"
+      },
+      "ending_equity_key": {
+        "value": "10020.67901605",
+        "availability": "available"
+      },
+      "unavailable_empty_value": true,
+      "disclaimer_in_meta": true,
+      "replay_timestamp_z": true
+    },
+    "trades": {
+      "header": [
+        "trade_id",
+        "symbol",
+        "direction",
+        "lifecycle_status",
+        "analytics_class",
+        "exit_type",
+        "included_in_completed_stats",
+        "entry_timestamp_utc",
+        "exit_timestamp_utc",
+        "entry_price",
+        "average_exit_price",
+        "original_quantity",
+        "executed_quantity",
+        "remaining_quantity",
+        "initial_stop_loss",
+        "current_stop_loss",
+        "take_profit_levels",
+        "gross_realized_pnl",
+        "net_realized_pnl",
+        "fees",
+        "slippage",
+        "spread_cost",
+        "r_multiple"
+      ],
+      "data_row_count": 7,
+      "completed_true_count": 4,
+      "directions": [
+        "LONG",
+        "SHORT"
+      ],
+      "partial_event_trade_present": true,
+      "partial_open_not_in_completed": true,
+      "open_not_in_completed": true,
+      "gross_sum": "22.36700115",
+      "net_sum": "20.67901605",
+      "fees_sum": "1.05498625",
+      "slip_sum": "0.52750000",
+      "spread_sum": "0.10549885",
+      "wins": 2,
+      "losses": 2,
+      "timestamps_utc_z": true,
+      "sample_rows": [
+        {
+          "trade_id": "fx_long_partials",
+          "direction": "LONG",
+          "net": "14.52701050",
+          "fees": "0.21499100",
+          "slippage": "0.10750000",
+          "spread": "0.02149925",
+          "exit_px": "114.93100575"
+        },
+        {
+          "trade_id": "fx_short_sl",
+          "direction": "SHORT",
+          "net": "-7.47740492",
+          "fees": "0.21700422",
+          "slippage": "0.10850000",
+          "spread": "0.02170035",
+          "exit_px": "112.06720560"
+        },
+        {
+          "trade_id": "fx_long_win",
+          "direction": "LONG",
+          "net": "19.06721398",
+          "fees": "0.42398802",
+          "slippage": "0.21200000",
+          "spread": "0.04239900",
+          "exit_px": "110.93340555"
+        },
+        {
+          "trade_id": "fx_long_sl",
+          "direction": "LONG",
+          "net": "-5.43780351",
+          "fees": "0.19900301",
+          "slippage": "0.09950000",
+          "spread": "0.01990025",
+          "exit_px": "96.94180485"
+        }
+      ],
+      "meta_has_disclaimer": true
+    },
+    "equity": {
+      "kind": "equity",
+      "utf8_ok": true,
+      "point_count": 10,
+      "has_header": true,
+      "sample": [
+        [
+          "2024-01-01T00:38:00Z",
+          "fx_short_sl",
+          "",
+          "-7.47740492",
+          "-7.47740492",
+          "9992.52259508",
+          "1",
+          "completed_trade"
+        ],
+        [
+          "2024-01-01T00:42:00Z",
+          "fx_long_sl",
+          "",
+          "-5.43780351",
+          "-12.91520843",
+          "9987.08479157",
+          "2",
+          "completed_trade"
+        ],
+        [
+          "2024-01-01T00:45:00Z",
+          "fx_long_partials",
+          "",
+          "14.52701050",
+          "1.61180207",
+          "10001.61180207",
+          "3",
+          "completed_trade"
+        ]
+      ],
+      "timestamps_z": true,
+      "file_bytes": 1796,
+      "preview": "# report_id,rep_0d454995af314658\n# report_version,backtest-report-v1.0.0\n# session_id,rp_443c4e385b574481\n# generated_at,2026-11-14T10:02:18.653542Z\n# exchange,binance\n# symbol,BTC/USDT\n# market_type,spot\n# replay_start,2024-01-01T00:00:00Z\n# replay_end,2024-01-01T04:00:00Z\n# replay_timestamp,2024-01-01T03:59:59.999000Z\n# disclaimer,HISTORICAL BACKTEST \u2014 SIMULATED RESULTS \u2014 NOT REAL ORDERS \u2014 NOT F"
+    },
+    "drawdown": {
+      "kind": "drawdown",
+      "utf8_ok": true,
+      "point_count": 4,
+      "has_header": true,
+      "sample": [
+        [
+          "2024-01-01T00:38:00Z",
+          "9992.52259508",
+          "10000.0",
+          "7.47740492",
+          "0.07477405"
+        ],
+        [
+          "2024-01-01T00:42:00Z",
+          "9987.08479157",
+          "10000.0",
+          "12.91520843",
+          "0.12915208"
+        ],
+        [
+          "2024-01-01T00:45:00Z",
+          "10001.61180207",
+          "10001.61180207",
+          "0.00000000",
+          "0.00000000"
+        ]
+      ],
+      "timestamps_z": true,
+      "file_bytes": 901,
+      "preview": "# report_id,rep_e0e798e4134a48d9\n# report_version,backtest-report-v1.0.0\n# session_id,rp_443c4e385b574481\n# generated_at,2026-11-14T10:02:18.661134Z\n# exchange,binance\n# symbol,BTC/USDT\n# market_type,spot\n# replay_start,2024-01-01T00:00:00Z\n# replay_end,2024-01-01T04:00:00Z\n# replay_timestamp,2024-01-01T03:59:59.999000Z\n# disclaimer,HISTORICAL BACKTEST \u2014 SIMULATED RESULTS \u2014 NOT REAL ORDERS \u2014 NOT F"
+    }
+  },
+  "pdf": {
+    "filename": "LABELED_FIXTURE_fixture_phase526_export_qa_v1_BTCUSDT_backtest_report_2026-11-14.pdf",
+    "bytes": 6921,
+    "magic": "%PDF-",
+    "page_count": 3,
+    "pages": [
+      {
+        "page": 1,
+        "width": 595.2755737304688,
+        "height": 841.8897705078125,
+        "char_count": 1030,
+        "screenshot": "docs/screenshots/qa-5-2-6-final-populated-pdf-page-01.png"
+      },
+      {
+        "page": 2,
+        "width": 595.2755737304688,
+        "height": 841.8897705078125,
+        "char_count": 415,
+        "screenshot": "docs/screenshots/qa-5-2-6-final-populated-pdf-page-02.png"
+      },
+      {
+        "page": 3,
+        "width": 595.2755737304688,
+        "height": 841.8897705078125,
+        "char_count": 1021,
+        "screenshot": "docs/screenshots/qa-5-2-6-final-populated-pdf-page-03.png"
+      }
+    ],
+    "has_disclaimer": true,
+    "has_equity_word": true,
+    "has_drawdown_word": true,
+    "has_trade_table_hint": true,
+    "mentions_fixture_trades": true,
+    "drawing_count": 74,
+    "image_count": 0,
+    "text_excerpt": "HISTORICAL BACKTEST \u2014 SIMULATED RESULTS \u2014 NOT REAL ORDERS \u2014 NOT FINANCIAL ADVICE\nPage 1\nReport rep_eff86e24f5a845ac \u00b7 generated 2026-11-14T10:02:18.710075Z\nHistorical Backtest Report\nHISTORICAL BACKTEST \u2014 SIMULATED RESULTS \u2014 NOT REAL ORDERS \u2014 NOT FINANCIAL ADVICE\nSession\nrp_443c4e385b574481\nExchange\nbinance\nSymbol\nBTC/USDT\nMarket type\nspot\nTimeframes\n4h, 1h, 15m, 5m\nReplay window\n2024-01-01T00:00:00Z \u2192 2024-01-01T04:00:00Z\nReplay clock\n2024-01-01T03:59:59.999000Z\nInitial equity\n10000.0 (configured)\nAnalytics version\nperformance-analytics-v1.0.0-balanced\nKey metrics\nMetric\nValue\nAvailability\nNet P&L\n20.67901605\navailable\nGross P&L\n22.36700115\navailable\nWin Rate\n50.00000000 %\navailable\nProfit Factor\n2.60113684\navailable\nAverage R\n0.66409052\navailable\nMax Drawdown\n12.91520843\navailable\nMax Drawdown %\n0.12915208 %\navailable\nEnding Equity\n10020.67901605\navailable\nTotal Execution Costs\n1.68798510\navailable\nCompleted trades\n4\nWinning\n2\nLosing\n2\nBreak-even\n0\nOpen\n1\nPartially closed\n1\nExcluded (open)\n1\nExcluded (partial)\n1\n\nHISTORICAL BACKTEST \u2014 SIMULATED RESULTS \u2014 NOT REAL ORDERS \u2014 NOT FINANCIAL ADVICE\nPage 2\nReport rep_eff86e24f5a845ac \u00b7 generated 2026-11-14T10:02:18.710075Z\nPerformance A",
+    "page_numbers_present": true,
+    "extracted_metric_lines": {
+      "metric_lines": {
+        "Completed": [
+          "Completed trades",
+          "Equity (completed-trade)",
+          "Completed trades included in performance statistics. Open or incomplete trades are listed separately and excluded from",
+          "completed-trade metrics."
+        ],
+        "Win Rate": [
+          "Win Rate"
+        ],
+        "Profit Factor": [
+          "Profit Factor"
+        ],
+        "Net P&L": [
+          "Net P&L",
+          "Net P&L"
+        ],
+        "Gross P&L": [
+          "Gross P&L"
+        ],
+        "Max Drawdown": [
+          "Max Drawdown",
+          "Max Drawdown %",
+          "Max Drawdown",
+          "Max Drawdown %"
+        ],
+        "Ending Equity": [
+          "Ending Equity"
+        ],
+        "Fees": [
+          "Fees"
+        ]
+      },
+      "contains_N/A": false
+    }
+  },
+  "reconciliation": {
+    "completed_count": {
+      "api_summary": 4,
+      "api_trade_rows_included": 4,
+      "csv_completed_true": 4,
+      "pdf_mentions_trades": true
+    },
+    "wins_losses": {
+      "api": [
+        2,
+        2
+      ],
+      "sum_trade_nets": [
+        2,
+        2
+      ],
+      "indep_from_api_trades": [
+        2,
+        2
+      ]
+    },
+    "gross_pnl": {
+      "api_summary": "22.36700115",
+      "sum_api_trades": "22.36700115",
+      "csv_sum": "22.36700115",
+      "csv_summary_metric": {
+        "value": "22.36700115",
+        "availability": "available"
+      }
+    },
+    "net_pnl": {
+      "api_summary": "20.67901605",
+      "sum_api_trades": "20.67901605",
+      "csv_sum": "20.67901605",
+      "csv_summary_metric": {
+        "value": "20.67901605",
+        "availability": "available"
+      }
+    },
+    "fees": {
+      "api_summary": "1.05498625",
+      "sum_api_trades": "1.05498625",
+      "csv_sum": "1.05498625",
+      "csv_summary_metric": {
+        "value": "1.05498625",
+        "availability": "available"
+      }
+    },
+    "slippage": {
+      "api_summary": "0.52750000",
+      "sum_api_trades": "0.52750000",
+      "csv_sum": "0.52750000",
+      "csv_summary_metric": {
+        "value": "0.52750000",
+        "availability": "available"
+      }
+    },
+    "spread": {
+      "api_summary": "0.10549885",
+      "sum_api_trades": "0.10549885",
+      "csv_sum": "0.10549885",
+      "csv_summary_metric": {
+        "value": "0.10549885",
+        "availability": "available"
+      }
+    },
+    "ending_equity": {
+      "api": "10020.67901605",
+      "csv_summary": {
+        "value": "10020.67901605",
+        "availability": "available"
+      }
+    },
+    "max_drawdown": {
+      "api": "12.91520843",
+      "csv_summary": {
+        "value": "12.91520843",
+        "availability": "available"
+      },
+      "api_block": {
+        "max_drawdown": "12.91520843",
+        "points": 4
+      }
+    },
+    "directions": [
+      "LONG",
+      "SHORT"
+    ],
+    "partials_not_double_counted": true,
+    "fees_slip_spread_nonzero": true,
+    "equity_points_nonzero": true,
+    "drawdown_points_or_summary": true
+  },
+  "empty": {
+    "session_id": "rp_56c7cc7a604d4d2f",
+    "completed_trade_count": 0,
+    "win_rate": {
+      "value": null,
+      "availability": "unavailable",
+      "label": "no_completed_trades"
+    },
+    "profit_factor": {
+      "value": null,
+      "availability": "unavailable",
+      "label": "no_completed_trades"
+    },
+    "completed_trades_len": 0,
+    "csv_files": {
+      "summary": {
+        "filename": "LABELED_FIXTURE_fixture_phase526_export_qa_v1_EMPTY_BTCUSDT_backtest_summary_2026-11-14.csv",
+        "bytes": 1266
+      },
+      "trades": {
+        "filename": "LABELED_FIXTURE_fixture_phase526_export_qa_v1_EMPTY_BTCUSDT_backtest_trades_2026-11-14.csv",
+        "bytes": 773
+      },
+      "equity": {
+        "filename": "LABELED_FIXTURE_fixture_phase526_export_qa_v1_EMPTY_BTCUSDT_backtest_equity_2026-11-14.csv",
+        "bytes": 842
+      },
+      "drawdown": {
+        "filename": "LABELED_FIXTURE_fixture_phase526_export_qa_v1_EMPTY_BTCUSDT_backtest_drawdown_2026-11-14.csv",
+        "bytes": 574
+      }
+    },
+    "csv_summary": {
+      "utf8_ok": true,
+      "header": [
+        "metric",
+        "value",
+        "availability",
+        "unit"
+      ],
+      "metric_row_count": 27,
+      "win_rate": {
+        "value": "",
+        "availability": "unavailable"
+      },
+      "profit_factor": {
+        "value": "",
+        "availability": "unavailable"
+      },
+      "completed_trade_count": {
+        "value": "0",
+        "availability": "available"
+      },
+      "gross_pnl": {
+        "value": "0",
+        "availability": "available"
+      },
+      "net_pnl": {
+        "value": "0",
+        "availability": "available"
+      },
+      "total_fees": {
+        "value": "0",
+        "availability": "available"
+      },
+      "total_slippage": {
+        "value": "0",
+        "availability": "available"
+      },
+      "total_spread_cost": {
+        "value": "0",
+        "availability": "available"
+      },
+      "max_drawdown": {
+        "value": "0",
+        "availability": "available"
+      },
+      "initial_equity": {
+        "value": "10000.0",
+        "availability": "available"
+      },
+      "ending_equity_key": {
+        "value": "10000.00000000",
+        "availability": "available"
+      },
+      "unavailable_empty_value": true,
+      "disclaimer_in_meta": true,
+      "replay_timestamp_z": true
+    },
+    "csv_trade_data_rows": 0,
+    "csv_trades_has_fake_fx_ids": false,
+    "pdf": {
+      "filename": "LABELED_FIXTURE_fixture_phase526_export_qa_v1_EMPTY_BTCUSDT_backtest_report_2026-11-14.pdf",
+      "bytes": 5505,
+      "magic": "%PDF-",
+      "page_count": 3,
+      "pages": [
+        {
+          "page": 1,
+          "width": 595.2755737304688,
+          "height": 841.8897705078125,
+          "char_count": 973,
+          "screenshot": "docs/screenshots/qa-5-2-6-final-empty-pdf-page-01.png"
+        },
+        {
+          "page": 2,
+          "width": 595.2755737304688,
+          "height": 841.8897705078125,
+          "char_count": 427,
+          "screenshot": "docs/screenshots/qa-5-2-6-final-empty-pdf-page-02.png"
+        },
+        {
+          "page": 3,
+          "width": 595.2755737304688,
+          "height": 841.8897705078125,
+          "char_count": 350,
+          "screenshot": "docs/screenshots/qa-5-2-6-final-empty-pdf-page-03.png"
+        }
+      ],
+      "has_disclaimer": true,
+      "has_equity_word": true,
+      "has_drawdown_word": true,
+      "has_trade_table_hint": true,
+      "mentions_fixture_trades": false,
+      "drawing_count": 37,
+      "image_count": 0,
+      "text_excerpt": "HISTORICAL BACKTEST \u2014 SIMULATED RESULTS \u2014 NOT REAL ORDERS \u2014 NOT FINANCIAL ADVICE\nPage 1\nReport rep_b39d404e45184e1a \u00b7 generated 2026-11-14T10:02:19.131317Z\nHistorical Backtest Report\nHISTORICAL BACKTEST \u2014 SIMULATED RESULTS \u2014 NOT REAL ORDERS \u2014 NOT FINANCIAL ADVICE\nSession\nrp_56c7cc7a604d4d2f\nExchange\nbinance\nSymbol\nBTC/USDT\nMarket type\nspot\nTimeframes\n4h, 1h, 15m, 5m\nReplay window\n2024-01-01T00:00:00Z \u2192 2024-01-01T04:00:00Z\nReplay clock\n2024-01-01T03:59:59.999000Z\nInitial equity\n10000.0 (configured)\nAnalytics version\nperformance-analytics-v1.0.0-balanced\nKey metrics\nMetric\nValue\nAvailability\nNet P&L\n0\navailable\nGross P&L\n0\navailable\nWin Rate\nN/A\nunavailable\nProfit Factor\nN/A\nunavailable\nAverage R\nN/A\nunavailable\nMax Drawdown\n0\navailable\nMax Drawdown %\n0.00000000 %\navailable\nEnding Equity\n10000.00000000\navailable\nTotal Execution Costs\n0\navailable\nCompleted trades\n0\nWinning\n0\nLosing\n0\nBreak-even\n0\nOpen\n0\nPartially closed\n0\nExcluded (open)\n0\nExcluded (partial)\n0\n\nHISTORICAL BACKTEST \u2014 SIMULATED RESULTS \u2014 NOT REAL ORDERS \u2014 NOT FINANCIAL ADVICE\nPage 2\nReport rep_b39d404e45184e1a \u00b7 generated 2026-11-14T10:02:19.131317Z\nPerformance Analysis\nEquity (completed-trade)\nNot enough data points\nE",
+      "page_numbers_present": true
+    },
+    "equity_points": 0,
+    "drawdown_points": 0
+  },
+  "checks": {
+    "completed_ge_3": true,
+    "has_long_and_short": true,
+    "partials_ok": true,
+    "costs_nonzero": true,
+    "equity_ok": true,
+    "dd_nonzero": true,
+    "pdf_opens": true,
+    "pdf_pages": true,
+    "empty_wr_unavail": true,
+    "empty_pf_unavail": true,
+    "empty_no_trades": true
+  }
+}

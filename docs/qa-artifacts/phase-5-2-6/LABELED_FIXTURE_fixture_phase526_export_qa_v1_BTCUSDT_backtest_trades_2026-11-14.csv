@@ -1,0 +1,22 @@
+# report_id,rep_29a34cf5d3e340b0
+# report_version,backtest-report-v1.0.0
+# session_id,rp_443c4e385b574481
+# generated_at,2026-11-14T10:02:18.646252Z
+# exchange,binance
+# symbol,BTC/USDT
+# market_type,spot
+# replay_start,2024-01-01T00:00:00Z
+# replay_end,2024-01-01T04:00:00Z
+# replay_timestamp,2024-01-01T03:59:59.999000Z
+# disclaimer,HISTORICAL BACKTEST — SIMULATED RESULTS — NOT REAL ORDERS — NOT FINANCIAL ADVICE
+
+trade_id,symbol,direction,lifecycle_status,analytics_class,exit_type,included_in_completed_stats,entry_timestamp_utc,exit_timestamp_utc,entry_price,average_exit_price,original_quantity,executed_quantity,remaining_quantity,initial_stop_loss,current_stop_loss,take_profit_levels,gross_realized_pnl,net_realized_pnl,fees,slippage,spread_cost,r_multiple
+fx_long_partials,BTC/USDT,LONG,closed_tp,closed,tp,true,2024-01-01T00:21:00Z,2024-01-01T00:45:00Z,100.0,114.93100575,1.0,1.0,0.0,95.0,95.0,110.0;120.0,14.87100075,14.52701050,0.21499100,0.10750000,0.02149925,2.90540210
+fx_short_sl,BTC/USDT,SHORT,closed_sl,closed,sl,true,2024-01-01T00:23:00Z,2024-01-01T00:38:00Z,105.0,112.06720560,1.0,1.0,0.0,112.0,112.0,98.0,-7.13020035,-7.47740492,0.21700422,0.10850000,0.02170035,-1.06820070
+fx_long_win,BTC/USDT,LONG,closed_tp,closed,tp,true,2024-01-01T00:25:00Z,2024-01-01T00:50:00Z,101.0,110.93340555,2.0,2.0,0.0,96.0,96.0,111.0,19.74560100,19.06721398,0.42398802,0.21200000,0.04239900,1.90672140
+fx_long_sl,BTC/USDT,LONG,closed_sl,closed,sl,true,2024-01-01T00:27:00Z,2024-01-01T00:42:00Z,102.0,96.94180485,1.0,1.0,0.0,97.0,97.0,115.0,-5.11940025,-5.43780351,0.19900301,0.09950000,0.01990025,-1.08756070
+
+# open_trades_section,,,,,,,,,,,,,,,,,,,,,,
+trade_id,symbol,direction,lifecycle_status,analytics_class,entry_timestamp_utc,entry_price,original_quantity,executed_quantity,remaining_quantity,initial_stop_loss,current_stop_loss,take_profit_levels,note,,,,,,,,,
+fx_partial_open,BTC/USDT,LONG,partially_closed,partially_closed,2024-01-01T00:29:00Z,103.0,1.0,0.5,0.5,98.0,98.0,113.0;123.0,Open or incomplete — not included in completed-trade metrics.,,,,,,,,,
+fx_open,BTC/USDT,LONG,open,open,2024-01-01T00:31:00Z,104.0,1.0,0.0,1.0,99.0,99.0,114.0,Open or incomplete — not included in completed-trade metrics.,,,,,,,,,

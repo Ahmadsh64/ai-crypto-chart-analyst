@@ -1,0 +1,67 @@
+@import "tailwindcss";
+
+:root {
+  --terminal-bg: #0b0f14;
+  --terminal-panel: #111821;
+  --terminal-surface: #17212b;
+  --terminal-border: #243041;
+  --terminal-text: #e8eef5;
+  --terminal-muted: #8b9bb0;
+  --terminal-accent: #3dd6c6;
+  --terminal-long: #22c55e;
+  --terminal-short: #ef4444;
+  --background: var(--terminal-bg);
+  --foreground: var(--terminal-text);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-terminal-bg: var(--terminal-bg);
+  --color-terminal-panel: var(--terminal-panel);
+  --color-terminal-surface: var(--terminal-surface);
+  --color-terminal-border: var(--terminal-border);
+  --color-terminal-text: var(--terminal-text);
+  --color-terminal-muted: var(--terminal-muted);
+  --color-terminal-accent: var(--terminal-accent);
+  --color-terminal-long: var(--terminal-long);
+  --color-terminal-short: var(--terminal-short);
+  --font-sans: var(--font-ibm-plex-sans);
+  --font-mono: var(--font-ibm-plex-mono);
+  --font-display: var(--font-ibm-plex-sans);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background:
+    radial-gradient(ellipse 80% 50% at 10% -10%, rgba(61, 214, 198, 0.08), transparent 50%),
+    radial-gradient(ellipse 60% 40% at 100% 0%, rgba(34, 197, 94, 0.05), transparent 45%),
+    var(--terminal-bg);
+  color: var(--terminal-text);
+  font-family: var(--font-ibm-plex-sans), "Segoe UI", sans-serif;
+}
+
+::selection {
+  background: rgba(61, 214, 198, 0.28);
+}
+
+/* Scrollbars */
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: #2a3a4d;
+  border-radius: 999px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}

@@ -1,0 +1,40 @@
+# report_id,rep_859be9c22fb84bc4
+# report_version,backtest-report-v1.0.0
+# session_id,rp_443c4e385b574481
+# generated_at,2026-11-14T10:02:18.635176Z
+# exchange,binance
+# symbol,BTC/USDT
+# market_type,spot
+# replay_start,2024-01-01T00:00:00Z
+# replay_end,2024-01-01T04:00:00Z
+# replay_timestamp,2024-01-01T03:59:59.999000Z
+# disclaimer,HISTORICAL BACKTEST — SIMULATED RESULTS — NOT REAL ORDERS — NOT FINANCIAL ADVICE
+
+metric,value,availability,unit
+net_pnl,20.67901605,available,
+gross_pnl,22.36700115,available,
+win_rate,50.00000000,available,%
+profit_factor,2.60113684,available,
+average_r_multiple,0.66409052,available,
+max_drawdown,12.91520843,available,
+max_drawdown_pct,0.12915208,available,%
+ending_equity,10020.67901605,available,
+total_execution_costs,1.68798510,available,
+completed_trade_count,4,available,
+total_simulated_trades,6,available,
+winning_trades,2,available,
+losing_trades,2,available,
+break_even_trades,0,available,
+partially_closed_trades,1,available,
+open_trades,1,available,
+excluded_open_trades,1,available,
+excluded_partial_trades,1,available,
+gross_pnl,22.36700115,available,
+net_pnl,20.67901605,available,
+total_fees,1.05498625,available,
+total_slippage,0.52750000,available,
+total_spread_cost,0.10549885,available,
+total_execution_costs,1.68798510,available,
+initial_equity,10000.0,available,
+max_drawdown,12.91520843,available,
+current_drawdown,0.00000000,available,

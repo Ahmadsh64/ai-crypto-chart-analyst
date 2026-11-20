@@ -1,0 +1,17 @@
+# report_id,rep_df79d31717504b51
+# report_version,backtest-report-v1.0.0
+# session_id,rp_56c7cc7a604d4d2f
+# generated_at,2026-11-14T10:02:19.117243Z
+# exchange,binance
+# symbol,BTC/USDT
+# market_type,spot
+# replay_start,2024-01-01T00:00:00Z
+# replay_end,2024-01-01T04:00:00Z
+# replay_timestamp,2024-01-01T03:59:59.999000Z
+# disclaimer,HISTORICAL BACKTEST — SIMULATED RESULTS — NOT REAL ORDERS — NOT FINANCIAL ADVICE
+
+# curve=completed_trade,mode=completed_trade,available=true,reason=,initial=10000.0,ending=10000.00000000
+timestamp_utc,trade_id,event_id,net_pnl_change,cumulative_net_pnl,equity,completed_trade_count,curve
+
+# curve=realized_cashflow,mode=realized_cashflow,available=true,reason=,initial=10000.0,ending=10000.00000000
+timestamp_utc,trade_id,event_id,net_pnl_change,cumulative_net_pnl,equity,completed_trade_count,curve

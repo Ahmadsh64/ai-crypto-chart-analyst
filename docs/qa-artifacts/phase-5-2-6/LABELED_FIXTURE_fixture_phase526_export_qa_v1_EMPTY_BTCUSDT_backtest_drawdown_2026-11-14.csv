@@ -1,0 +1,16 @@
+# report_id,rep_ae4b7d4c75e84aeb
+# report_version,backtest-report-v1.0.0
+# session_id,rp_56c7cc7a604d4d2f
+# generated_at,2026-11-14T10:02:19.124467Z
+# exchange,binance
+# symbol,BTC/USDT
+# market_type,spot
+# replay_start,2024-01-01T00:00:00Z
+# replay_end,2024-01-01T04:00:00Z
+# replay_timestamp,2024-01-01T03:59:59.999000Z
+# disclaimer,HISTORICAL BACKTEST — SIMULATED RESULTS — NOT REAL ORDERS — NOT FINANCIAL ADVICE
+
+# available,true,reason,
+# max_drawdown,0,max_drawdown_pct,0.00000000
+# peak,,trough,,recovery,
+timestamp_utc,equity,peak_equity,drawdown,drawdown_pct

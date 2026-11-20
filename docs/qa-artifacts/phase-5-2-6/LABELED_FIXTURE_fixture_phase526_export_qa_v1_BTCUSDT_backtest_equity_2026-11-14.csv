@@ -1,0 +1,27 @@
+# report_id,rep_0d454995af314658
+# report_version,backtest-report-v1.0.0
+# session_id,rp_443c4e385b574481
+# generated_at,2026-11-14T10:02:18.653542Z
+# exchange,binance
+# symbol,BTC/USDT
+# market_type,spot
+# replay_start,2024-01-01T00:00:00Z
+# replay_end,2024-01-01T04:00:00Z
+# replay_timestamp,2024-01-01T03:59:59.999000Z
+# disclaimer,HISTORICAL BACKTEST — SIMULATED RESULTS — NOT REAL ORDERS — NOT FINANCIAL ADVICE
+
+# curve=completed_trade,mode=completed_trade,available=true,reason=,initial=10000.0,ending=10020.67901605
+timestamp_utc,trade_id,event_id,net_pnl_change,cumulative_net_pnl,equity,completed_trade_count,curve
+2024-01-01T00:38:00Z,fx_short_sl,,-7.47740492,-7.47740492,9992.52259508,1,completed_trade
+2024-01-01T00:42:00Z,fx_long_sl,,-5.43780351,-12.91520843,9987.08479157,2,completed_trade
+2024-01-01T00:45:00Z,fx_long_partials,,14.52701050,1.61180207,10001.61180207,3,completed_trade
+2024-01-01T00:50:00Z,fx_long_win,,19.06721398,20.67901605,10020.67901605,4,completed_trade
+
+# curve=realized_cashflow,mode=realized_cashflow,available=true,reason=,initial=10000.0,ending=10025.41051697
+timestamp_utc,trade_id,event_id,net_pnl_change,cumulative_net_pnl,equity,completed_trade_count,curve
+2024-01-01T00:32:00Z,fx_long_partials,lp_p1,4.73900100,4.73900100,10004.73900100,1,realized_cashflow
+2024-01-01T00:35:00Z,fx_partial_open,po_p,4.73150092,9.47050192,10009.47050192,2,realized_cashflow
+2024-01-01T00:38:00Z,fx_short_sl,ss_x,-7.47740492,1.99309700,10001.99309700,3,realized_cashflow
+2024-01-01T00:42:00Z,fx_long_sl,ll_x,-5.43780351,-3.44470651,9996.55529349,4,realized_cashflow
+2024-01-01T00:45:00Z,fx_long_partials,lp_c,9.78800950,6.34330299,10006.34330299,4,realized_cashflow
+2024-01-01T00:50:00Z,fx_long_win,lw_x,19.06721398,25.41051697,10025.41051697,5,realized_cashflow
