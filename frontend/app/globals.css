@@ -14,6 +14,36 @@
   --foreground: var(--terminal-text);
 }
 
+@media (prefers-color-scheme: light) {
+  :root:not(.dark) {
+    --terminal-bg: #f4f7fb;
+    --terminal-panel: #ffffff;
+    --terminal-surface: #eef3f8;
+    --terminal-border: #d0dae6;
+    --terminal-text: #152033;
+    --terminal-muted: #5b6b80;
+    --terminal-accent: #0f9f90;
+    --terminal-long: #15803d;
+    --terminal-short: #dc2626;
+    --background: var(--terminal-bg);
+    --foreground: var(--terminal-text);
+  }
+}
+
+.light {
+  --terminal-bg: #f4f7fb;
+  --terminal-panel: #ffffff;
+  --terminal-surface: #eef3f8;
+  --terminal-border: #d0dae6;
+  --terminal-text: #152033;
+  --terminal-muted: #5b6b80;
+  --terminal-accent: #0f9f90;
+  --terminal-long: #15803d;
+  --terminal-short: #dc2626;
+  --background: var(--terminal-bg);
+  --foreground: var(--terminal-text);
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

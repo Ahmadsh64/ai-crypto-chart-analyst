@@ -63,30 +63,62 @@ async def list_exchanges() -> ExchangesResponse:
 async def list_markets(
     exchange: ExchangeId = Query(...),
     market_type: MarketType = Query(...),
-    search: str | None = Query(default=None, description="Optional symbol filter, e.g. BTC"),
+    search: str | None = Query(
+        default=None,
+        description="Filter by symbol, native symbol, base, or quote (e.g. BTC, USDT, BTCUSDT)",
+    ),
+    limit: int | None = Query(
+        default=None,
+        ge=1,
+        le=5000,
+        description="Optional page size. Omit to return the full filtered list.",
+    ),
+    offset: int = Query(default=0, ge=0, description="Pagination offset"),
+    refresh: bool = Query(
+        default=False,
+        description="Bypass metadata cache and refetch from the exchange",
+    ),
 ) -> MarketsResponse:
+    from app.market_data.markets_cache import (
+        filter_trading_pairs,
+        get_markets_cache,
+        paginate_pairs,
+    )
+
     manager = get_exchange_manager()
+    cache = get_markets_cache()
+    cache_hit = False
     try:
-        pairs = await manager.list_markets(exchange, market_type)
+        if refresh:
+            cache.invalidate(exchange, market_type)
+
+        cached = None if refresh else cache.get(exchange, market_type)
+        if cached is not None:
+            pairs = cached
+            cache_hit = True
+        else:
+            pairs = await manager.list_markets(exchange, market_type)
+            # Only cache active instruments.
+            pairs = [p for p in pairs if getattr(p, "active", True)]
+            cache.set(exchange, market_type, pairs)
     except ExchangeError as exc:
         raise _http_for_exchange_error(exc) from exc
 
-    if search:
-        needle = search.upper().replace("-", "/").replace(" ", "")
-        pairs = [
-            p
-            for p in pairs
-            if needle in p.symbol.upper() or needle in p.native_symbol.upper()
-        ]
+    filtered = filter_trading_pairs(pairs, search)
+    page, total = paginate_pairs(filtered, limit=limit, offset=offset)
 
     now = datetime.now(timezone.utc)
     return MarketsResponse(
         exchange=exchange,
         market_type=market_type,
-        count=len(pairs),
-        pairs=pairs,
+        count=len(page),
+        pairs=page,
         last_updated=now,
         data_source=f"{exchange.value}:{market_type.value}",
+        total=total,
+        limit=limit,
+        offset=offset,
+        cache_hit=cache_hit,
     )
 
 

@@ -148,7 +148,7 @@ export function VisionObservationsPanel({ vision }: { vision: VisionResult | nul
   if (!vision) {
     return (
       <div className="rounded-lg border border-terminal-border bg-terminal-panel p-3 text-sm text-terminal-muted">
-        No vision analysis yet. Upload a screenshot and run Vision.
+        No vision analysis yet. Use Live Market Analyze (auto-capture) or Upload Chart Image mode.
       </div>
     );
   }

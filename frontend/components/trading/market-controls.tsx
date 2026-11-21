@@ -1,11 +1,12 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
+import { SymbolSearchSelect } from "@/components/trading/symbol-search-select";
 import { useExchanges, useMarkets } from "@/hooks/use-market-data";
+import { FALLBACK_SYMBOLS, resolveValidSymbol } from "@/lib/market-symbol-search";
 import { useMarketStore } from "@/stores/market-store";
-import type { Timeframe } from "@/types/api";
+import type { Timeframe, TradingPair } from "@/types/api";
 
-const FALLBACK_SYMBOLS = ["BTC/USDT", "ETH/USDT", "SOL/USDT", "BNB/USDT", "XRP/USDT", "DOGE/USDT"];
 const TIMEFRAMES: Timeframe[] = ["1m", "5m", "15m", "30m", "1h", "4h", "1d"];
 
 interface MarketControlsProps {
@@ -14,44 +15,55 @@ interface MarketControlsProps {
 }
 
 export function MarketControls({ showTimeframe = true, compact = false }: MarketControlsProps) {
-  const {
-    exchange,
-    marketType,
-    symbol,
-    timeframe,
-    searchQuery,
-    setSymbol,
-    setTimeframe,
-  } = useMarketStore();
+  const { exchange, marketType, symbol, timeframe, setSymbol, setTimeframe } = useMarketStore();
 
   const exchanges = useExchanges();
-  const markets = useMarkets(exchange, marketType, searchQuery || undefined);
+  // Load full catalog (server-cached). Local combobox handles search + virtualization.
+  const markets = useMarkets(exchange, marketType);
 
-  const symbols = useMemo(() => {
-    const fromApi = markets.data?.pairs.map((p) => p.symbol) ?? [];
-    if (fromApi.length === 0) return FALLBACK_SYMBOLS;
-    const defaults = FALLBACK_SYMBOLS.filter((s) => fromApi.includes(s));
-    const rest = fromApi.filter((s) => !FALLBACK_SYMBOLS.includes(s)).slice(0, 40);
-    return [...defaults, ...rest];
-  }, [markets.data]);
+  const pairs: TradingPair[] = useMemo(() => {
+    const fromApi = markets.data?.pairs ?? [];
+    if (fromApi.length > 0) return fromApi.filter((p) => p.active !== false);
+    return FALLBACK_SYMBOLS.map((s) => {
+      const [base, quote] = s.split("/");
+      return {
+        symbol: s,
+        base: base || s,
+        quote: quote || "USDT",
+        exchange,
+        market_type: marketType,
+        native_symbol: s.replace("/", ""),
+        active: true,
+      } satisfies TradingPair;
+    });
+  }, [markets.data, exchange, marketType]);
+
+  useEffect(() => {
+    if (markets.isLoading || markets.isError) return;
+    if (pairs.length === 0) return;
+    const next = resolveValidSymbol(pairs, symbol);
+    if (next !== symbol) setSymbol(next);
+  }, [pairs, symbol, setSymbol, markets.isLoading, markets.isError, exchange, marketType]);
 
   return (
     <div className={compact ? "flex flex-wrap gap-2" : "space-y-3"}>
-      <label className={compact ? "block" : "block space-y-1.5"}>
+      <label className={compact ? "block min-w-[180px] flex-1" : "block space-y-1.5"}>
         {!compact ? (
-          <span className="text-[11px] uppercase tracking-[0.14em] text-terminal-muted">Symbol</span>
+          <span className="text-[11px] uppercase tracking-[0.14em] text-terminal-muted">
+            Symbol
+          </span>
         ) : null}
-        <select
-          value={symbols.includes(symbol) ? symbol : symbols[0]}
-          onChange={(e) => setSymbol(e.target.value)}
-          className="h-10 w-full min-w-[140px] rounded-md border border-terminal-border bg-terminal-surface px-3 text-sm text-terminal-text outline-none focus:border-terminal-accent"
-        >
-          {symbols.map((s) => (
-            <option key={s} value={s}>
-              {s}
-            </option>
-          ))}
-        </select>
+        <SymbolSearchSelect
+          pairs={pairs}
+          value={symbol}
+          onChange={setSymbol}
+          loading={markets.isLoading}
+          error={
+            markets.isError
+              ? (markets.error as Error)?.message || "Failed to load markets"
+              : null
+          }
+        />
       </label>
 
       {showTimeframe ? (
@@ -79,7 +91,7 @@ export function MarketControls({ showTimeframe = true, compact = false }: Market
         <p className="text-[11px] text-terminal-muted">
           {markets.isLoading
             ? "Loading pairs…"
-            : `${markets.data?.count ?? 0} USDT pairs · source ${exchange}`}
+            : `${markets.data?.total ?? markets.data?.count ?? pairs.length} active pairs · ${exchange}`}
         </p>
       ) : null}
     </div>

@@ -7,6 +7,7 @@ from fastapi import APIRouter
 from app import __version__
 from app.api.schemas.health import ComponentStatus, HealthResponse
 from app.core.config import get_settings
+from app.db.session import ping_database
 from app.exchanges.manager import get_exchange_manager
 
 router = APIRouter(tags=["health"])
@@ -36,12 +37,14 @@ async def health_check() -> HealthResponse:
         exchange_status = "unavailable"
         exchange_detail = f"Exchange check failed: {exc}"
 
+    db_status, db_detail = await ping_database(settings)
+
     components = [
         ComponentStatus(name="api", status="ok", detail="FastAPI process running"),
         ComponentStatus(
             name="database",
-            status="unavailable" if settings.environment == "development" else "degraded",
-            detail="PostgreSQL wiring lands in Phase 6",
+            status=db_status,  # type: ignore[arg-type]
+            detail=db_detail,
         ),
         ComponentStatus(name="exchanges", status=exchange_status, detail=exchange_detail),  # type: ignore[arg-type]
         ComponentStatus(
@@ -51,11 +54,19 @@ async def health_check() -> HealthResponse:
         ),
     ]
 
+    # Persistence is optional: DB unavailable must not take the API down.
     overall: str = "ok"
     if any(c.status == "unavailable" for c in components if c.name == "api"):
         overall = "unavailable"
-    elif any(c.status == "degraded" for c in components):
-        overall = "degraded"
+    else:
+        non_db_degraded = any(
+            c.status == "degraded" for c in components if c.name != "database"
+        )
+        db_degraded = settings.persistence_enabled and any(
+            c.name == "database" and c.status != "ok" for c in components
+        )
+        if non_db_degraded or db_degraded:
+            overall = "degraded"
 
     return HealthResponse(
         status=overall,  # type: ignore[arg-type]

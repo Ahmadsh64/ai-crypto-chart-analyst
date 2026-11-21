@@ -4,27 +4,20 @@ Professional AI-powered cryptocurrency chart analysis platform combining Smart M
 
 > Analysis-only. The first release does **not** execute real trades.
 
-## Current status (Phase 5.4.0 complete — with limitations; Phase 6.0.1 / 6.0.1.1 design complete)
+## Current status
 
-- Monorepo structure (`frontend/`, `backend/`, `docs/`, `infra/`)
-- FastAPI health + market REST APIs
-- Binance / Bybit public REST OHLCV + tickers
-- **Real-time WebSocket hub** at `/ws/market` (Binance + Bybit streams)
-- Incremental Lightweight Charts candle updates (no full reload per tick)
-- Overview / Live Market prices update via WebSocket (REST used as historical seed)
-- **Technical Indicators Engine** (EMA/SMA, RSI, MACD, Stoch RSI, ATR, Bollinger, volume)
-- **Market Structure Engine** (swings, HH/HL/LH/LL, BOS, CHoCH, MSS)
-- **Liquidity Engine** (EQH/EQL, BSL/SSL, sweeps) — see `docs/liquidity_definitions.md`
-- **Order Blocks & Fair Value Gaps** — see `docs/ob_fvg_definitions.md`
-- **Multi-Timeframe orchestration** — see `docs/multi_timeframe_architecture.md`
-- **Confluence scoring** (preliminary assessment only) — see `docs/confluence_engine.md`
-- **Trade Plan engine** (hypothetical entry/SL/TP/RR/sizing) — see `docs/trade_plan_engine.md`
-- **Final Decision engine** (`LONG` / `SHORT` / `WAIT` / `NO TRADE`) — see `docs/final_decision_engine.md`
-- `GET /api/v1/...` includes `multi-timeframe` + `confluence` + `trade-plan` + `decision`
-- Live updates include `multi_timeframe_update` / `confluence_update` / `trade_plan_update` / `decision_update`
-- Chart Analyzer: MTF + Confluence + Trade Plan + Final Decision panels
-- **Phase 5.4.0 AI Vision & Analysis Orchestration** — Analyze button, vision upload, explainer + compare (`POST /api/v1/ai/*`); see `docs/PHASE_5_4_0_AI_VISION_ANALYSIS_ORCHESTRATION.md`. Live OpenAI provider success requires `OPENAI_API_KEY` (otherwise `AI_UNAVAILABLE` with deterministic engines preserved).
-- **Phase 6.0.1 / 6.0.1.1 Database Architecture (design only)** — PostgreSQL persistence plan with event idempotency, `analysis_run_id` consistency, and financial reconstruction rules; no DB installed yet. See `docs/PHASE_6_0_1_DATABASE_ARCHITECTURE.md`.
+**Living status board:** [docs/STATUS.md](docs/STATUS.md) · **Docs index:** [docs/README.md](docs/README.md)
+
+Shipped through **Phase 6.0.3.1** (Analyze soft-persist + History UI). **Phase 6.0.4** (Replay persistence) not started. Journal / standalone Performance deferred.
+
+Highlights:
+
+- Monorepo (`frontend/`, `backend/`, `docs/`, `infra/`) · FastAPI · Binance/Bybit REST + **WebSocket hub** `/ws/market`
+- Phase 3 engines: indicators, structure, liquidity, OB/FVG
+- Phase 4: MTF, confluence, trade plan, final decision (`LONG` / `SHORT` / `WAIT` / `NO TRADE`)
+- Phase 5: historical replay stack, trade-plan chart viz, AI vision / **AI Market Analyzer**, Market Opportunities scanner (5.5 MVP)
+- Phase 6.0.2–6.0.3.1: PostgreSQL foundation (`backend/app/db/`), Analyze soft-persist, `/history`
+- Surfaces: Overview · Live Market · Opportunities · Analyzer · Trade Setups · SMC · History · Replay · Settings
 
 ## Quick start (Windows PowerShell)
 
@@ -54,6 +47,7 @@ npm run dev
 - API docs: http://127.0.0.1:8000/docs  
 
 Full instructions: [docs/setup_guide.md](docs/setup_guide.md)  
+Status: [docs/STATUS.md](docs/STATUS.md) · Docs index: [docs/README.md](docs/README.md)  
 Architecture: [docs/architecture.md](docs/architecture.md)  
 Indicators: [docs/indicators.md](docs/indicators.md)
 
@@ -69,4 +63,4 @@ Indicators: [docs/indicators.md](docs/indicators.md)
 
 ## Roadmap
 
-See [docs/architecture.md](docs/architecture.md) for Phases 2–7.
+See [docs/STATUS.md](docs/STATUS.md) for shipped vs deferred, and [docs/architecture.md](docs/architecture.md) for layer detail.

@@ -103,6 +103,14 @@ class ExchangeManager:
     ) -> Ticker:
         return await self.get(exchange_id).fetch_ticker(symbol, market_type)
 
+    async def fetch_tickers_24h(
+        self,
+        exchange_id: ExchangeId,
+        market_type: MarketType,
+    ) -> list[Ticker]:
+        """Bulk 24h tickers when the adapter supports a category/all endpoint."""
+        return await self.get(exchange_id).fetch_tickers_24h(market_type)
+
 
 _manager: ExchangeManager | None = None
 

@@ -29,14 +29,14 @@ Monorepo with a Next.js App Router frontend and a FastAPI Python backend. Numeri
 | `analysis/ob_fvg` | Order Blocks, Fair Value Gaps (Phase 3.4) |
 | `analysis/multi_timeframe` | 4H/1H/15M/5M data orchestration (Phase 4.1) |
 | `analysis/confluence` | Deterministic confluence scoring (Phase 4.2) |
-| `analysis/ict` | Sessions, PDH/PDL, OTE, kill zones |
-| `analysis/decision_engine` | LONG / SHORT / WAIT / NO TRADE scoring |
-| `analysis/trade_plan` | Entry, SL, TP1–3, position sizing |
-| `replay/` | Historical multi-TF replay clock (Phase 5.1) |
-| `replay/analysis/` | Historical analysis pipeline on replay prefixes (Phase 5.2.1) |
-| `ai/` | Vision + explanation with Pydantic validation |
-| `backtesting/` | Historical simulation without look-ahead (later) |
-| `database/` | SQLAlchemy models, Alembic, repositories |
+| `analysis/decision_engine` | LONG / SHORT / WAIT / NO TRADE scoring (Phase 4.4) |
+| `analysis/trade_plan` | Entry, SL, TP1–3, position sizing (Phase 4.3) |
+| `analysis/ict`, `analysis/smc` | Reserved empty — ICT sessions not started; SMC lives in structure/liquidity/ob_fvg |
+| `replay/` | Historical multi-TF replay + sim/costs/analytics (Phase 5.1–5.2.x) |
+| `scanner/` | Market Opportunities scanner (Phase 5.5) |
+| `ai/` | Vision + explanation with Pydantic validation (Phase 5.4) |
+| `db/` | SQLAlchemy / Alembic persistence (Phase 6.0.2+) |
+| `backtesting/`, `database/` | Unused shells — use `replay/` and `db/` |
 
 ## Analysis modes
 
@@ -52,23 +52,22 @@ Monorepo with a Next.js App Router frontend and a FastAPI Python backend. Numeri
 
 ## Phase map
 
-1. Scaffold, health API, dashboard shell  
-2. Exchange OHLCV + charts  
-2.5. Real-time `/ws/market` (Binance + Bybit)  
-3.1. Technical indicators engine + Chart Analyzer panel — see [indicators.md](indicators.md)  
-3.2. Market Structure engine (swings / BOS / CHoCH / MSS) — see [strategy_definitions.md](strategy_definitions.md)  
-3.3. Liquidity engine (EQH/EQL / BSL/SSL / sweeps) — see [liquidity_definitions.md](liquidity_definitions.md)  
-3.4. Order Blocks & FVG — see [ob_fvg_definitions.md](ob_fvg_definitions.md)  
-4.1. Multi-Timeframe data orchestration — see [multi_timeframe_architecture.md](multi_timeframe_architecture.md)  
-4.2. Deterministic confluence scoring — see [confluence_engine.md](confluence_engine.md)  
-4.3. Trade plan engine — see [trade_plan_engine.md](trade_plan_engine.md)  
-4.4. Final decision engine — see [final_decision_engine.md](final_decision_engine.md)  
-5.1. Historical replay engine — see [PHASE_5_1_HISTORICAL_REPLAY.md](PHASE_5_1_HISTORICAL_REPLAY.md)  
-5.2.1. Historical analysis pipeline (**current**) — see [PHASE_5_2_1_HISTORICAL_ANALYSIS.md](PHASE_5_2_1_HISTORICAL_ANALYSIS.md)  
-5.2.2+. Simulated fills / P&L (not started)  
-5. OpenAI vision + explanation  
-6. PostgreSQL, journal, analytics  
-7. Docker polish, full QA  
+Living detail: **[STATUS.md](STATUS.md)**.
+
+1. Scaffold, health API, dashboard shell — **shipped**  
+2. Exchange OHLCV + charts — **shipped**  
+2.5. Real-time `/ws/market` (Binance + Bybit) — **shipped**  
+3.1–3.4. Indicators, structure, liquidity, OB/FVG — **shipped**  
+4.1–4.4. MTF, confluence, trade plan, decision — **shipped**  
+5.1–5.2.x. Historical replay + sim/costs/analytics/reporting — **shipped** (`replay/`)  
+5.3 / 5.3.1. Trade-plan chart visualization + monitoring — **shipped**  
+5.4.x. AI vision + AI Market Analyzer — **shipped**  
+5.5. Market Opportunities scanner MVP — **shipped**  
+6.0.2–6.0.3.1. DB foundation, Analyze soft-persist, History UI — **shipped** (`db/`)  
+6.0.4. Replay persistence — **not started**  
+6.0.5–6.0.6. Journal / standalone performance — **not started**  
+7. Docker polish, full QA — **not started**  
+ICT sessions / kill zones — **not started** (reserved) 
 
 ## Indicators / structure realtime path
 

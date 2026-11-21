@@ -231,7 +231,12 @@ class TradeSimulator:
             allocs = [a / s for a in allocs]
 
         trade = SimulatedTrade(
-            trade_id=new_trade_id(),
+            trade_id=new_trade_id(
+                replay_session_id=self.session_id,
+                signal_key=result.signal_key,
+                decision_event_index=event_index,
+                direction=str(result.direction),
+            ),
             signal_key=result.signal_key,
             replay_session_id=self.session_id,
             signal_id=snap.decision_id,
@@ -276,15 +281,22 @@ class TradeSimulator:
         reason: str,
     ) -> SimulatedTrade:
         now = datetime.now(timezone.utc)
+        rej_direction = "LONG" if str(snap.decision).upper() == "LONG" else "SHORT"
+        rej_key = f"rej|{snap.decision_id}|{snap.replay_timestamp.isoformat()}"
         return SimulatedTrade(
-            trade_id=new_trade_id(),
-            signal_key=f"rej|{snap.decision_id}|{snap.replay_timestamp.isoformat()}",
+            trade_id=new_trade_id(
+                replay_session_id=self.session_id,
+                signal_key=rej_key,
+                decision_event_index=snap.event_index,
+                direction=rej_direction,
+            ),
+            signal_key=rej_key,
             replay_session_id=self.session_id,
             signal_id=snap.decision_id,
             exchange=snap.exchange,
             symbol=snap.symbol,
             market_type=snap.market_type,
-            direction="LONG" if str(snap.decision).upper() == "LONG" else "SHORT",
+            direction=rej_direction,
             decision=str(snap.decision),
             decision_timestamp=ensure_utc(snap.replay_timestamp),
             decision_event_index=snap.event_index,

@@ -1,0 +1,42 @@
+# Render Blueprint — AI Crypto Chart Analyst API
+# Docs: https://render.com/docs/blueprint-spec
+# Review env values in the dashboard; do not commit secrets.
+
+services:
+  - type: web
+    name: ai-chart-analyzer-api
+    runtime: python
+    rootDir: backend
+    plan: free
+    region: oregon
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: DEBUG
+        value: "false"
+      - key: AUTH_ENABLED
+        value: "true"
+      - key: DOCS_ENABLED
+        value: "false"
+      - key: PERSISTENCE_ENABLED
+        value: "true"
+      - key: SUPABASE_SSL_CA_FILE
+        value: prod-ca-2021.crt
+      - key: HOST
+        value: 0.0.0.0
+      # Set these in the Render dashboard (sync: false = secret / manual):
+      - key: CORS_ORIGINS
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_JWT_SECRET
+        sync: false
+      - key: AUTH_ALLOWED_EMAILS
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false

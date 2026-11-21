@@ -6,11 +6,13 @@ import type { UTCTimestamp } from "lightweight-charts";
 import { Maximize2, Minimize2 } from "lucide-react";
 import {
   CandlestickChart,
+  type CandlestickChartHandle,
   type ChartOverlaySeries,
   type LiquidityChartData,
   type ObFvgChartData,
   type StructureChartData,
 } from "@/components/charts/candlestick-chart";
+import type { Ref } from "react";
 import {
   TradePlanChartControls,
   TradePlanChartLegend,
@@ -82,6 +84,8 @@ interface MarketChartPanelProps {
   enableTradePlanVisuals?: boolean;
   /** Optional external legend mirror (e.g. sidebar). */
   onTradePlanLegendChange?: (legend: TradePlanLegendModel) => void;
+  /** Phase 5.4.2 — expose Lightweight Charts screenshot handle. */
+  chartRef?: Ref<CandlestickChartHandle>;
 }
 
 export function MarketChartPanel({
@@ -98,6 +102,7 @@ export function MarketChartPanel({
   obFvgOverlays = [],
   enableTradePlanVisuals = false,
   onTradePlanLegendChange,
+  chartRef,
 }: MarketChartPanelProps) {
   useLiveChartSubscription(exchange, marketType, symbol, timeframe);
 
@@ -655,6 +660,7 @@ export function MarketChartPanel({
           </div>
         ) : seriesMatchesSelection && candles.data?.candles?.length ? (
           <CandlestickChart
+            ref={chartRef}
             seriesKey={`${exchange}:${marketType}:${symbol}:${timeframe}`}
             candles={candles.data.candles}
             liveCandle={liveCandle}

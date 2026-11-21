@@ -217,22 +217,77 @@ class BinanceExchange(BaseExchange):
         assert_homogeneous_series(candles)
         return candles
 
+    @staticmethod
+    def _ranking_volume(data: dict) -> float | None:
+        """Prefer quoteVolume (USDT) for cross-pair liquidity ranking."""
+        for key in ("quoteVolume", "quote_volume"):
+            raw = data.get(key)
+            if raw not in (None, ""):
+                try:
+                    return float(raw)
+                except (TypeError, ValueError):
+                    pass
+        raw = data.get("volume")
+        if raw not in (None, ""):
+            try:
+                return float(raw)
+            except (TypeError, ValueError):
+                return None
+        return None
+
+    def _ticker_from_24hr(self, data: dict, market_type: MarketType) -> Ticker | None:
+        native = data.get("symbol")
+        if not native:
+            return None
+        last = data.get("lastPrice")
+        if last in (None, ""):
+            return None
+        return Ticker(
+            symbol=to_internal_symbol(str(native)),
+            exchange=self.exchange_id,
+            market_type=market_type,
+            last=float(last),
+            bid=float(data["bidPrice"]) if data.get("bidPrice") not in (None, "") else None,
+            ask=float(data["askPrice"]) if data.get("askPrice") not in (None, "") else None,
+            high_24h=float(data["highPrice"]) if data.get("highPrice") not in (None, "") else None,
+            low_24h=float(data["lowPrice"]) if data.get("lowPrice") not in (None, "") else None,
+            volume_24h=self._ranking_volume(data),
+            change_pct_24h=(
+                float(data["priceChangePercent"])
+                if data.get("priceChangePercent") not in (None, "")
+                else None
+            ),
+            updated_at=datetime.now(timezone.utc),
+        )
+
     async def fetch_ticker(self, symbol: str, market_type: MarketType) -> Ticker:
         base = self._base_for(market_type)
         native = to_native_symbol(symbol)
         path = "/api/v3/ticker/24hr" if market_type == MarketType.SPOT else "/fapi/v1/ticker/24hr"
         response = await self._get(base, path, {"symbol": native})
-        data = response.json()
-        return Ticker(
-            symbol=to_internal_symbol(native),
-            exchange=self.exchange_id,
-            market_type=market_type,
-            last=float(data["lastPrice"]),
-            bid=float(data["bidPrice"]) if data.get("bidPrice") not in (None, "") else None,
-            ask=float(data["askPrice"]) if data.get("askPrice") not in (None, "") else None,
-            high_24h=float(data["highPrice"]),
-            low_24h=float(data["lowPrice"]),
-            volume_24h=float(data["volume"]),
-            change_pct_24h=float(data["priceChangePercent"]),
-            updated_at=datetime.now(timezone.utc),
-        )
+        ticker = self._ticker_from_24hr(response.json(), market_type)
+        if ticker is None:
+            raise ExchangeRequestError(
+                f"No Binance ticker for {native}",
+                exchange=self.exchange_id.value,
+                status_code=404,
+            )
+        return ticker
+
+    async def fetch_tickers_24h(self, market_type: MarketType) -> list[Ticker]:
+        """Single bulk 24hr ticker call for universe volume ranking."""
+        self.ensure_market_type(market_type)
+        base = self._base_for(market_type)
+        path = "/api/v3/ticker/24hr" if market_type == MarketType.SPOT else "/fapi/v1/ticker/24hr"
+        response = await self._get(base, path, {})
+        payload = response.json()
+        if not isinstance(payload, list):
+            return []
+        out: list[Ticker] = []
+        for item in payload:
+            if not isinstance(item, dict):
+                continue
+            ticker = self._ticker_from_24hr(item, market_type)
+            if ticker is not None:
+                out.append(ticker)
+        return out

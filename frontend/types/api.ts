@@ -56,6 +56,10 @@ export interface MarketsResponse {
   pairs: TradingPair[];
   last_updated: string;
   data_source: string;
+  total?: number | null;
+  limit?: number | null;
+  offset?: number | null;
+  cache_hit?: boolean | null;
 }
 
 export interface Candle {
@@ -1580,12 +1584,44 @@ export interface VisionResult {
   detected_timeframe?: string | null;
   detected_symbol?: string | null;
   detected_chart_type?: string | null;
+  /** Phase 5.4.2.2 — screenshot recognition (OCR estimates only). */
+  detected_exchange?: string | null;
+  detected_platform?: string | null;
+  symbol_confidence?: number | null;
+  timeframe_confidence?: number | null;
+  observed_last_price?: number | null;
+  observed_price_confidence?: number | null;
+  observed_price_label?: string | null;
   observations: VisionObservation[];
   visible_price_labels: string[];
   visible_indicators: string[];
   unreadable_fields: string[];
   limitations: string[];
   message?: string | null;
+}
+
+export interface ScreenshotRecognitionSummary {
+  detected_symbol?: string | null;
+  symbol_confidence?: number | null;
+  detected_timeframe?: string | null;
+  timeframe_confidence?: number | null;
+  detected_exchange?: string | null;
+  detected_platform?: string | null;
+  observed_last_price?: number | null;
+  observed_price_confidence?: number | null;
+  observed_price_label?: string | null;
+  needs_symbol_confirmation: boolean;
+  needs_timeframe_confirmation: boolean;
+  disclaimer: string;
+}
+
+export interface PriceComparisonSummary {
+  screenshot_observed_price?: number | null;
+  verified_last_price?: number | null;
+  verified_price_timestamp?: string | null;
+  verified_price_source?: string | null;
+  discrepancy_pct?: number | null;
+  note: string;
 }
 
 export interface VisionComparisonSummary {
@@ -1651,6 +1687,15 @@ export interface AnalysisSnapshot {
   analysis_only_disclaimer: string;
 }
 
+export type AnalysisPersistenceStatus =
+  | "disabled"
+  | "saved"
+  | "idempotent"
+  | "failed"
+  | "conflict";
+
+export type AnalysisMode = "LIVE_MARKET" | "UPLOADED_IMAGE";
+
 export interface AiAnalyzeResponse {
   status: AiStatus;
   request_id: string;
@@ -1663,12 +1708,27 @@ export interface AiAnalyzeResponse {
   snapshot: AnalysisSnapshot;
   explanation?: AnalysisExplanation | null;
   message?: string | null;
+  /** Phase 5.4.2 — optional vision from analyze-with-vision. */
+  vision?: VisionResult | null;
+  vision_status?: "ok" | "skipped" | "unavailable" | "invalid_image" | string | null;
+  vision_detail?: string | null;
+  /** Phase 5.4.2.2 */
+  analysis_mode?: AnalysisMode | string | null;
+  recognition?: ScreenshotRecognitionSummary | null;
+  price_comparison?: PriceComparisonSummary | null;
+  /** Phase 6.0.3 — soft history persistence (non-blocking). */
+  analysis_run_id?: string | null;
+  persistence_status?: AnalysisPersistenceStatus | string | null;
+  persistence_detail?: string | null;
+  consistency_status?: string | null;
+  persisted_snapshot_id?: string | null;
 }
 
 export interface AiVisionAnalyzeResponse {
   status: AiStatus;
   request_id: string;
   vision: VisionResult;
+  recognition?: ScreenshotRecognitionSummary | null;
 }
 
 export interface AiCompareResponse {
@@ -1677,5 +1737,205 @@ export interface AiCompareResponse {
   comparison: VisionComparisonSummary;
   snapshot_decision: string;
   notes: string[];
+}
+
+/** Phase 6.0.3.1 — persisted Analyze history (read-only). */
+export type ConsistencyStatus =
+  | "ALIGNED"
+  | "DUAL_FETCH_DIVERGED"
+  | "DECISION_ONLY"
+  | "PLAN_ONLY"
+  | "INSUFFICIENT_PROVENANCE";
+
+export interface AnalysisHistoryListItem {
+  analysis_run_id: string;
+  snapshot_id: string;
+  analysis_session_id?: string | null;
+  exchange: string;
+  market_type: string;
+  symbol: string;
+  timeframe?: string | null;
+  analysis_timestamp: string;
+  decision: string;
+  consistency_status: ConsistencyStatus | string;
+  decision_analysis_timestamp?: string | null;
+  trade_plan_analysis_timestamp?: string | null;
+  entry_reference_price?: string | null;
+  stop_loss_price?: string | null;
+  take_profit_prices: string[];
+  primary_rr?: string | null;
+  data_freshness?: string | null;
+  created_at: string;
+}
+
+export interface AnalysisHistoryListResponse {
+  items: AnalysisHistoryListItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface AnalysisSessionSummary {
+  id: string;
+  exchange: string;
+  market_type: string;
+  symbol: string;
+  primary_timeframe?: string | null;
+  status: string;
+  source: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AnalysisHistoryDetail {
+  analysis_run_id: string;
+  snapshot_id: string;
+  consistency_status: ConsistencyStatus | string;
+  snapshot_kind: string;
+  exchange: string;
+  market_type: string;
+  symbol: string;
+  timeframe?: string | null;
+  analysis_timestamp: string;
+  decision_analysis_timestamp?: string | null;
+  trade_plan_analysis_timestamp?: string | null;
+  decision: string;
+  decision_id?: string | null;
+  plan_id?: string | null;
+  configuration_versions: Record<string, unknown>;
+  snapshot_schema_version: string;
+  data_freshness?: string | null;
+  entry_reference_price?: string | null;
+  entry_low?: string | null;
+  entry_high?: string | null;
+  stop_loss_price?: string | null;
+  take_profit_prices: string[];
+  primary_rr?: string | null;
+  confluence_bullish?: string | null;
+  confluence_bearish?: string | null;
+  content_hash: string;
+  created_at: string;
+  levels_note: string;
+  session?: AnalysisSessionSummary | null;
+  snapshot_payload: Record<string, unknown>;
+  decision_extract?: Record<string, unknown> | null;
+  trade_plan_extract?: Record<string, unknown> | null;
+}
+
+export interface AnalysisHistoryListParams {
+  limit?: number;
+  offset?: number;
+  exchange?: string;
+  market_type?: string;
+  symbol?: string;
+  timeframe?: string;
+  decision?: string;
+  consistency_status?: string;
+  from?: string;
+  to?: string;
+}
+
+/* ─── Phase 5.5 Market Opportunities ─── */
+
+export type OpportunityStatus =
+  | "READY"
+  | "APPROACHING_ENTRY"
+  | "WAITING"
+  | "INVALIDATED"
+  | "EXPIRED"
+  | "DATA_UNAVAILABLE";
+
+export interface OpportunityLevel {
+  label: string;
+  price?: number | null;
+  available: boolean;
+}
+
+export interface MarketOpportunity {
+  opportunity_id: string;
+  exchange: ExchangeId;
+  market_type: MarketType;
+  symbol: string;
+  base: string;
+  timeframe: Timeframe;
+  status: OpportunityStatus;
+  decision?: FinalDecision | null;
+  decision_reason: string;
+  direction?: "LONG" | "SHORT" | null;
+  market_executable?: boolean;
+  executability_note?: string;
+  current_price?: number | null;
+  price_updated_at?: string | null;
+  price_source: string;
+  entry_reference?: number | null;
+  entry_low?: number | null;
+  entry_high?: number | null;
+  stop_loss?: number | null;
+  take_profits: OpportunityLevel[];
+  primary_rr?: number | null;
+  confluence_bullish?: number | null;
+  confluence_bearish?: number | null;
+  confluence_score?: number | null;
+  supporting_evidence: string[];
+  blocking_conditions: string[];
+  entry_distance_pct?: number | null;
+  quote_volume_24h?: number | null;
+  analysis_timestamp?: string | null;
+  decision_id?: string | null;
+  trade_plan_id?: string | null;
+  lifecycle?: string | null;
+  rank_score: number;
+  rank_explanation: string;
+  actionable: boolean;
+  planned_not_fills_note: string;
+}
+
+export interface OpportunityListResponse {
+  opportunities: MarketOpportunity[];
+  total: number;
+  actionable_total: number;
+  disclaimer: string;
+}
+
+export interface ScannerStatusPayload {
+  state: "idle" | "scanning" | "error" | "disabled";
+  last_scan?: {
+    scan_id: string;
+    started_at: string;
+    finished_at?: string | null;
+    status: string;
+    pairs_targeted: number;
+    pairs_scanned: number;
+    pairs_failed: number;
+    opportunities_found: number;
+    ready_count: number;
+    long_count: number;
+    short_count: number;
+    errors: string[];
+  } | null;
+  pairs_monitored: number;
+  pairs_scanned_total: number;
+  qualified_opportunities: number;
+  long_opportunities: number;
+  short_opportunities: number;
+  ready_opportunities: number;
+  waiting_opportunities?: number;
+  approaching_opportunities?: number;
+  invalidated_opportunities?: number;
+  expired_opportunities?: number;
+  data_unavailable_opportunities?: number;
+  last_successful_scan_at?: string | null;
+  next_scan_at?: string | null;
+  scan_interval_seconds: number;
+  message: string;
+}
+
+export interface ScannerStatusResponse {
+  status: ScannerStatusPayload;
+}
+
+export interface ScanTriggerResponse {
+  scan: ScannerStatusPayload["last_scan"];
+  message: string;
 }
 

@@ -1,14 +1,20 @@
 "use client";
 
+import { getAccessToken } from "@/lib/supabase/client";
+
 type ReplayListener = (message: Record<string, unknown>) => void;
 
-function wsUrl(): string {
+async function wsUrl(): Promise<string> {
   const api = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
   const url = new URL(api);
   url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
   url.pathname = "/ws/replay";
   url.search = "";
   url.hash = "";
+  const token = await getAccessToken();
+  if (token) {
+    url.searchParams.set("access_token", token);
+  }
   return url.toString();
 }
 
@@ -19,12 +25,16 @@ export class ReplayWebsocketClient {
   private sessionId: string | null = null;
 
   connect(sessionId?: string) {
+    void this.connectAsync(sessionId);
+  }
+
+  private async connectAsync(sessionId?: string) {
     this.sessionId = sessionId ?? null;
     if (this.socket && (this.socket.readyState === WebSocket.OPEN || this.socket.readyState === WebSocket.CONNECTING)) {
       if (sessionId) this.subscribe(sessionId);
       return;
     }
-    const socket = new WebSocket(wsUrl());
+    const socket = new WebSocket(await wsUrl());
     this.socket = socket;
     socket.onmessage = (ev) => {
       try {

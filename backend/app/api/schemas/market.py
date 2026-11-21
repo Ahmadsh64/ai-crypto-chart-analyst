@@ -29,6 +29,11 @@ class MarketsResponse(BaseModel):
     pairs: list[TradingPair]
     last_updated: datetime
     data_source: str
+    # Phase 5.4.2 — optional pagination metadata (backward compatible).
+    total: int | None = None
+    limit: int | None = None
+    offset: int | None = None
+    cache_hit: bool | None = None
 
 
 class CandlesResponse(BaseModel):

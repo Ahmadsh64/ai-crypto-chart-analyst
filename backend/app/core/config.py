@@ -32,9 +32,24 @@ class Settings(BaseSettings):
         description="Comma-separated list of allowed CORS origins",
     )
 
-    # Database
+    # Database / Supabase PostgreSQL (Phase 6.0.2) — never expose to frontend
     database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/ai_crypto_chart"
     database_echo: bool = False
+    # Optional persistence — disabled by default; app runs without Supabase
+    persistence_enabled: bool = False
+    # Prefer DATABASE_URL; optional Supabase-specific overrides (server-only)
+    supabase_db_url: str = ""
+    supabase_db_host: str = ""
+    supabase_db_port: int = 5432
+    supabase_db_name: str = "postgres"
+    supabase_db_user: str = "postgres"
+    supabase_db_password: str = ""
+    db_pool_size: int = 5
+    db_max_overflow: int = 10
+    db_pool_timeout_seconds: float = 30.0
+    db_connect_timeout_seconds: float = 10.0
+    # Server-only path to Supabase Root CA PEM (relative paths resolve from backend/)
+    supabase_ssl_ca_file: str = ""
 
     # Redis (optional)
     redis_url: str = "redis://localhost:6379/0"
@@ -70,13 +85,68 @@ class Settings(BaseSettings):
     # Demo / mock mode for UI development without live exchange calls
     demo_mode: bool = False
 
+    # --- Auth (Supabase Auth JWT) — server-only secrets; never NEXT_PUBLIC_ ---
+    # When false (default), REST/WS behave as unauthenticated local/dev/tests.
+    # Production personal beta MUST set AUTH_ENABLED=true with JWT secret + allowlist.
+    auth_enabled: bool = False
+    supabase_url: str = ""
+    supabase_jwt_secret: str = ""
+    # Comma-separated owner emails allowed to use the API (case-insensitive).
+    auth_allowed_emails: str = ""
+    # OpenAPI docs: off in production unless explicitly re-enabled.
+    docs_enabled: bool | None = None
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
 
     @property
+    def auth_allowed_email_list(self) -> list[str]:
+        return [
+            email.strip().lower()
+            for email in self.auth_allowed_emails.split(",")
+            if email.strip()
+        ]
+
+    @property
+    def openapi_docs_enabled(self) -> bool:
+        if self.docs_enabled is not None:
+            return self.docs_enabled
+        return self.environment != "production"
+
+    @property
     def allowed_image_type_list(self) -> list[str]:
         return [t.strip() for t in self.allowed_image_types.split(",") if t.strip()]
+
+    @property
+    def effective_database_url(self) -> str:
+        """Resolve async SQLAlchemy URL for Supabase/Postgres (asyncpg)."""
+        if self.supabase_db_url.strip():
+            return self._ensure_asyncpg_url(self.supabase_db_url.strip())
+        if (
+            self.supabase_db_host.strip()
+            and self.supabase_db_password
+            and self.persistence_enabled
+        ):
+            user = self.supabase_db_user or "postgres"
+            host = self.supabase_db_host.strip()
+            port = self.supabase_db_port or 5432
+            name = self.supabase_db_name or "postgres"
+            from urllib.parse import quote_plus
+
+            password = quote_plus(self.supabase_db_password)
+            return (
+                f"postgresql+asyncpg://{user}:{password}@{host}:{port}/{name}"
+            )
+        return self._ensure_asyncpg_url(self.database_url)
+
+    @staticmethod
+    def _ensure_asyncpg_url(url: str) -> str:
+        if url.startswith("postgresql://"):
+            return "postgresql+asyncpg://" + url[len("postgresql://") :]
+        if url.startswith("postgres://"):
+            return "postgresql+asyncpg://" + url[len("postgres://") :]
+        return url
 
 
 @lru_cache

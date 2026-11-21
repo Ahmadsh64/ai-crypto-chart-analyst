@@ -1,55 +1,106 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { ScanSearch, Upload, X } from "lucide-react";
-import { IndicatorsPanel } from "@/components/charts/indicators-panel";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useSearchParams } from "next/navigation";
+import { ScanSearch } from "lucide-react";
 import { MarketChartPanel } from "@/components/charts/market-chart-panel";
-import {
-  StructurePanel,
-  type StructureOverlayId,
-} from "@/components/charts/structure-panel";
-import { LiquidityPanel } from "@/components/charts/liquidity-panel";
+import type { StructureOverlayId } from "@/components/charts/structure-panel";
 import type { LiquidityOverlayId } from "@/lib/liquidity-chart-overlays";
-import { ObFvgPanel } from "@/components/charts/ob-fvg-panel";
-import { MtfOverviewPanel } from "@/components/charts/mtf-overview-panel";
-import { ConfluencePanel } from "@/components/charts/confluence-panel";
-import { TradePlanPanel } from "@/components/charts/trade-plan-panel";
-import { DecisionPanel } from "@/components/charts/decision-panel";
-import { TradePlanChartStatusBadge } from "@/components/charts/trade-plan-chart-overlay";
 import {
   AiExplanationPanel,
-  DeterministicSnapshotPanel,
   VisionComparisonPanel,
   VisionObservationsPanel,
 } from "@/components/charts/ai-analysis-panels";
+import {
+  PriceComparisonPanel,
+  ScreenshotRecognitionResultsPanel,
+} from "@/components/charts/market-analyzer-results";
+import { AnalyzerMarketOverview } from "@/components/charts/analyzer-market-overview";
+import { AnalyzerDecisionStatus } from "@/components/charts/analyzer-decision-status";
+import { AnalyzerTradeLevels } from "@/components/charts/analyzer-trade-levels";
+import { SmcAnalysisSections } from "@/components/charts/smc-analysis-sections";
+import { AnalysisModeSelector } from "@/components/charts/analysis-mode-selector";
+import { ChartImageUpload } from "@/components/charts/chart-image-upload";
+import { ChartRecognitionPanel } from "@/components/charts/chart-recognition-panel";
+import type { CandlestickChartHandle } from "@/components/charts/candlestick-chart";
 import type { ObFvgOverlayId } from "@/lib/ob-fvg-chart-overlays";
 import type { TradePlanLegendModel } from "@/lib/trade-plan-chart-visuals";
+import { TradePlanChartStatusBadge } from "@/components/charts/trade-plan-chart-overlay";
 import { MarketControls } from "@/components/trading/market-controls";
 import { useMarketStore } from "@/stores/market-store";
+import { useDecision, useTradePlan } from "@/hooks/use-market-data";
+import {
+  useLiveDecisionSubscription,
+  useLiveTradePlanSubscription,
+} from "@/hooks/use-market-socket";
+import {
+  decisionKey,
+  tickerKey,
+  tradePlanKey,
+  useLiveMarketStore,
+} from "@/stores/live-market-store";
+import {
+  asFinalDecision,
+  buildAnalyzerTradeLevels,
+} from "@/lib/analyzer-dashboard-display";
 import { api, ApiError } from "@/services/api";
 import type {
   AiAnalyzeResponse,
   AnalysisSnapshot,
+  DecisionResponse,
+  ExchangeId,
   IndicatorId,
+  MarketType,
+  Timeframe,
+  TradePlanResponse,
   VisionComparisonSummary,
   VisionResult,
 } from "@/types/api";
-import type { ReactNode } from "react";
 import { cn } from "@/utils/cn";
+import { shouldBlockDuplicateSubmit } from "@/lib/ai-analysis-display";
+import { exportChartScreenshot, waitForChartPaint } from "@/lib/chart-export";
 import {
-  formatFileSize,
-  shouldBlockDuplicateSubmit,
-  validateChartScreenshotFile,
-} from "@/lib/ai-analysis-display";
+  analyzerDescription,
+  analyzerTitle,
+} from "@/lib/market-symbol-search";
+import type { AnalysisMode } from "@/lib/analysis-mode";
+import {
+  draftFromVision,
+  type RecognitionDraft,
+} from "@/lib/chart-recognition";
 
 export default function ChartAnalyzerPage() {
-  const { exchange, marketType, symbol, timeframe } = useMarketStore();
-  const [preview, setPreview] = useState<string | null>(null);
-  const [fileName, setFileName] = useState<string | null>(null);
-  const [fileSize, setFileSize] = useState<number | null>(null);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [uploadError, setUploadError] = useState<string | null>(null);
+  const {
+    exchange,
+    marketType,
+    symbol,
+    timeframe,
+    setExchange,
+    setMarketType,
+    setSymbol,
+    setTimeframe,
+  } = useMarketStore();
+  const searchParams = useSearchParams();
+  const chartHandleRef = useRef<CandlestickChartHandle | null>(null);
 
+  // Open Full Analysis from Market Opportunities — hydrate store only (no layout change).
+  useEffect(() => {
+    if (searchParams.get("from") !== "opportunities") return;
+    const ex = searchParams.get("exchange") as ExchangeId | null;
+    const mt = searchParams.get("marketType") as MarketType | null;
+    const sym = searchParams.get("symbol");
+    const tf = searchParams.get("timeframe") as Timeframe | null;
+    if (ex === "binance" || ex === "bybit") setExchange(ex);
+    if (mt === "spot" || mt === "usdt_m_futures" || mt === "linear_perpetual") {
+      setMarketType(mt);
+    }
+    if (sym) setSymbol(sym.toUpperCase());
+    if (tf && ["1m", "5m", "15m", "30m", "1h", "4h", "1d"].includes(tf)) {
+      setTimeframe(tf);
+    }
+  }, [searchParams, setExchange, setMarketType, setSymbol, setTimeframe]);
+
+  const [mode, setMode] = useState<AnalysisMode>("LIVE_MARKET");
   const [planLegend, setPlanLegend] = useState<TradePlanLegendModel | null>(null);
   const onTradePlanLegendChange = useCallback((legend: TradePlanLegendModel) => {
     setPlanLegend(legend);
@@ -82,96 +133,254 @@ export default function ChartAnalyzerPage() {
   ]);
 
   const [analyzeLoading, setAnalyzeLoading] = useState(false);
-  const [visionLoading, setVisionLoading] = useState(false);
+  const [recognizeLoading, setRecognizeLoading] = useState(false);
+  const [visionPhase, setVisionPhase] = useState<"idle" | "capturing" | "running" | "done">(
+    "idle",
+  );
   const [analyzeError, setAnalyzeError] = useState<string | null>(null);
-  const [visionError, setVisionError] = useState<string | null>(null);
+  const [visionNote, setVisionNote] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [analyzeResult, setAnalyzeResult] = useState<AiAnalyzeResponse | null>(null);
   const [snapshot, setSnapshot] = useState<AnalysisSnapshot | null>(null);
   const [vision, setVision] = useState<VisionResult | null>(null);
   const [comparison, setComparison] = useState<VisionComparisonSummary | null>(null);
+  const [recognitionDraft, setRecognitionDraft] = useState<RecognitionDraft>(() =>
+    draftFromVision(null, { exchange, marketType, symbol, timeframe }),
+  );
 
   const analyzeSeqRef = useRef(0);
-  const visionSeqRef = useRef(0);
   const analyzeAbortRef = useRef<AbortController | null>(null);
-  const visionAbortRef = useRef<AbortController | null>(null);
+  const recognizeAbortRef = useRef<AbortController | null>(null);
 
-  useEffect(() => {
-    // Clear AI results that belong to a previous market selection.
+  useLiveTradePlanSubscription(exchange, marketType, symbol, true);
+  useLiveDecisionSubscription(exchange, marketType, symbol, true);
+  const tradePlanQuery = useTradePlan({ exchange, marketType, symbol });
+  const decisionQuery = useDecision({ exchange, marketType, symbol });
+  const liveTradePlan = useLiveMarketStore(
+    (s) => s.tradePlan[tradePlanKey(exchange, marketType, symbol)],
+  );
+  const liveDecision = useLiveMarketStore(
+    (s) => s.decision[decisionKey(exchange, marketType, symbol)],
+  );
+  const liveTicker = useLiveMarketStore(
+    (s) => s.tickers[tickerKey(exchange, marketType, symbol)],
+  );
+
+  const clearAnalyzeState = useCallback(() => {
+    analyzeSeqRef.current += 1;
+    analyzeAbortRef.current?.abort();
+    analyzeAbortRef.current = null;
+    setAnalyzeLoading(false);
     setAnalyzeResult(null);
     setSnapshot(null);
     setComparison(null);
+    setVision(null);
     setAnalyzeError(null);
-  }, [exchange, marketType, symbol]);
+    setVisionNote(null);
+    setVisionPhase("idle");
+  }, []);
 
-  const clearImage = useCallback(() => {
-    setPreview((prev) => {
+  useEffect(() => {
+    if (mode !== "LIVE_MARKET") return;
+    clearAnalyzeState();
+    setPreviewUrl((prev) => {
       if (prev) URL.revokeObjectURL(prev);
       return null;
     });
-    setFileName(null);
-    setFileSize(null);
-    setImageFile(null);
-    setUploadError(null);
-    setVision(null);
-    setComparison(null);
-    setVisionError(null);
+  }, [exchange, marketType, symbol, timeframe, mode, clearAnalyzeState]);
+
+  useEffect(() => {
+    return () => {
+      analyzeAbortRef.current?.abort();
+      recognizeAbortRef.current?.abort();
+      setPreviewUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return null;
+      });
+    };
   }, []);
 
-  const onPickImage = (file: File | undefined) => {
-    if (!file) return;
-    const validation = validateChartScreenshotFile(file);
-    if (!validation.ok) {
-      setUploadError(validation.error);
-      return;
-    }
-    setUploadError(null);
-    setFileName(file.name);
-    setFileSize(file.size);
-    setImageFile(file);
-    const url = URL.createObjectURL(file);
-    setPreview((prev) => {
+  const handleModeChange = (next: AnalysisMode) => {
+    if (next === mode) return;
+    clearAnalyzeState();
+    recognizeAbortRef.current?.abort();
+    setRecognizeLoading(false);
+    setUploadFile(null);
+    setPreviewUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+    setRecognitionDraft(
+      draftFromVision(null, { exchange, marketType, symbol, timeframe }),
+    );
+    setMode(next);
+  };
+
+  const handleUploadChange = (file: File | null, url: string | null) => {
+    setPreviewUrl((prev) => {
       if (prev) URL.revokeObjectURL(prev);
       return url;
     });
+    setUploadFile(file);
+    clearAnalyzeState();
+    setVision(null);
+    if (file && url) {
+      void runRecognize(file);
+    } else {
+      setRecognitionDraft(
+        draftFromVision(null, { exchange, marketType, symbol, timeframe }),
+      );
+    }
   };
 
-  const runAnalyze = async () => {
-    if (shouldBlockDuplicateSubmit(analyzeLoading)) return;
-    if (!exchange || !marketType || !symbol) {
-      setAnalyzeError("Select exchange, market type, and symbol first.");
-      return;
-    }
-    analyzeAbortRef.current?.abort();
+  const runRecognize = async (file: File) => {
+    recognizeAbortRef.current?.abort();
     const controller = new AbortController();
-    analyzeAbortRef.current = controller;
-    const seq = ++analyzeSeqRef.current;
-    setAnalyzeLoading(true);
+    recognizeAbortRef.current = controller;
+    setRecognizeLoading(true);
     setAnalyzeError(null);
     try {
-      const result = await api.aiAnalyze(
-        {
+      const result = await api.aiVisionAnalyze(file, controller.signal);
+      if (controller.signal.aborted) return;
+      setVision(result.vision);
+      setRecognitionDraft(
+        draftFromVision(result.vision, {
           exchange,
           marketType,
           symbol,
           timeframe,
-          includeExplanation: true,
+        }),
+      );
+      if (result.vision.status !== "OK") {
+        setVisionNote(
+          result.vision.message ||
+            "Vision unavailable — confirm symbol and timeframe manually.",
+        );
+      } else {
+        setVisionNote(null);
+      }
+    } catch (err) {
+      if (controller.signal.aborted) return;
+      const message =
+        err instanceof ApiError
+          ? err.message
+          : err instanceof Error
+            ? err.message
+            : "Recognition failed";
+      setAnalyzeError(message);
+      setVision(null);
+      setRecognitionDraft(
+        draftFromVision(null, { exchange, marketType, symbol, timeframe }),
+      );
+    } finally {
+      if (!controller.signal.aborted) setRecognizeLoading(false);
+    }
+  };
+
+  const applyRecognitionToStore = (draft: RecognitionDraft) => {
+    setExchange(draft.exchange);
+    setMarketType(draft.marketType);
+    setSymbol(draft.symbol.trim().toUpperCase());
+    setTimeframe(draft.timeframe);
+  };
+
+  const runAnalyze = async () => {
+    if (shouldBlockDuplicateSubmit(analyzeLoading)) return;
+
+    const useUpload = mode === "UPLOADED_IMAGE";
+    const ex = useUpload ? recognitionDraft.exchange : exchange;
+    const mt = useUpload ? recognitionDraft.marketType : marketType;
+    const sym = useUpload ? recognitionDraft.symbol.trim().toUpperCase() : symbol;
+    const tf = useUpload ? recognitionDraft.timeframe : timeframe;
+
+    if (!ex || !mt || !sym) {
+      setAnalyzeError("Select exchange, market type, and symbol first.");
+      return;
+    }
+    if (useUpload && !uploadFile) {
+      setAnalyzeError("Upload a chart image before Analyze.");
+      return;
+    }
+    if (useUpload && (!recognitionDraft.symbolConfirmed || !recognitionDraft.timeframeConfirmed)) {
+      setAnalyzeError(
+        "Confirm symbol and timeframe (or correct them) before Analyze. Ambiguous recognition is never guessed silently.",
+      );
+      return;
+    }
+
+    if (useUpload) {
+      applyRecognitionToStore(recognitionDraft);
+    }
+
+    analyzeAbortRef.current?.abort();
+    const controller = new AbortController();
+    analyzeAbortRef.current = controller;
+    const seq = ++analyzeSeqRef.current;
+
+    setAnalyzeLoading(true);
+    setAnalyzeError(null);
+    setVisionNote(null);
+
+    let chartFile: File | null = useUpload ? uploadFile : null;
+    try {
+      if (!useUpload) {
+        setVisionPhase("capturing");
+        await waitForChartPaint(150);
+        if (seq !== analyzeSeqRef.current) return;
+        const exported = await exportChartScreenshot({
+          chart: chartHandleRef.current,
+          exchange: ex,
+          marketType: mt,
+          symbol: sym,
+          timeframe: tf,
+        });
+        if (exported.ok) {
+          chartFile = exported.file;
+          setPreviewUrl((prev) => {
+            if (prev) URL.revokeObjectURL(prev);
+            return exported.previewUrl;
+          });
+          setVisionPhase("running");
+        } else {
+          setVisionNote(
+            `${exported.error} Deterministic analysis will still run without Vision.`,
+          );
+          setVisionPhase("idle");
+        }
+      } else {
+        setVisionPhase("running");
+      }
+
+      const result = await api.aiAnalyzeWithVision(
+        {
+          exchange: ex,
+          marketType: mt,
+          symbol: sym,
+          timeframe: tf,
+          analysisMode: mode,
+          file: chartFile,
         },
         controller.signal,
       );
       if (seq !== analyzeSeqRef.current) return;
+
       setAnalyzeResult(result);
       setSnapshot(result.snapshot);
-      if (vision && result.snapshot) {
-        try {
-          const cmp = await api.aiCompare(
-            { snapshot: result.snapshot, vision },
-            controller.signal,
-          );
-          if (seq === analyzeSeqRef.current) setComparison(cmp.comparison);
-        } catch {
-          /* comparison optional */
-        }
+      setVision(result.vision ?? vision);
+      setComparison(result.explanation?.vision_comparison ?? null);
+
+      if (result.vision_status && result.vision_status !== "ok") {
+        setVisionNote(
+          result.vision_detail ||
+            (result.vision_status === "skipped"
+              ? "Vision skipped — chart image unavailable."
+              : `Vision ${result.vision_status}. Deterministic results preserved.`),
+        );
+      } else if (result.vision) {
+        setVisionNote(null);
       }
+      setVisionPhase("done");
     } catch (err) {
       if (controller.signal.aborted) return;
       if (seq !== analyzeSeqRef.current) return;
@@ -182,152 +391,312 @@ export default function ChartAnalyzerPage() {
             ? err.message
             : "Analyze failed";
       setAnalyzeError(message);
+      setVisionPhase("idle");
     } finally {
       if (seq === analyzeSeqRef.current) setAnalyzeLoading(false);
     }
   };
 
-  const runVision = async () => {
-    if (shouldBlockDuplicateSubmit(visionLoading) || !imageFile) return;
-    visionAbortRef.current?.abort();
-    const controller = new AbortController();
-    visionAbortRef.current = controller;
-    const seq = ++visionSeqRef.current;
-    setVisionLoading(true);
-    setVisionError(null);
-    try {
-      const result = await api.aiVisionAnalyze(imageFile, controller.signal);
-      if (seq !== visionSeqRef.current) return;
-      setVision(result.vision);
-      if (snapshot) {
-        const cmp = await api.aiCompare(
-          { snapshot, vision: result.vision },
-          controller.signal,
-        );
-        if (seq === visionSeqRef.current) setComparison(cmp.comparison);
-      }
-    } catch (err) {
-      if (controller.signal.aborted) return;
-      if (seq !== visionSeqRef.current) return;
-      const message =
-        err instanceof ApiError
-          ? err.message
-          : err instanceof Error
-            ? err.message
-            : "Vision analysis failed";
-      setVisionError(message);
-    } finally {
-      if (seq === visionSeqRef.current) setVisionLoading(false);
-    }
-  };
+  const analyzeLabel =
+    analyzeLoading && visionPhase === "capturing"
+      ? "Capturing chart…"
+      : analyzeLoading && visionPhase === "running"
+        ? "Analyzing + Vision…"
+        : analyzeLoading
+          ? "Analyzing…"
+          : "Analyze";
+
+  const chartTitle =
+    mode === "UPLOADED_IMAGE"
+      ? "Reconstructed chart (verified exchange OHLCV)"
+      : undefined;
+
+  const analyzeDisabled =
+    analyzeLoading ||
+    !symbol ||
+    (mode === "UPLOADED_IMAGE" &&
+      (!uploadFile ||
+        !recognitionDraft.symbol.trim() ||
+        !recognitionDraft.symbolConfirmed ||
+        !recognitionDraft.timeframeConfirmed));
+
+  const displayExchange = mode === "UPLOADED_IMAGE" ? recognitionDraft.exchange : exchange;
+  const displayMarketType =
+    mode === "UPLOADED_IMAGE" ? recognitionDraft.marketType : marketType;
+  const displaySymbol =
+    mode === "UPLOADED_IMAGE"
+      ? recognitionDraft.symbol.trim().toUpperCase() || symbol
+      : symbol;
+  const displayTimeframe =
+    mode === "UPLOADED_IMAGE" ? recognitionDraft.timeframe : timeframe;
+
+  const resolvedDecision: DecisionResponse | null =
+    analyzeResult?.decision ?? decisionQuery.data ?? null;
+  const resolvedTradePlan: TradePlanResponse | null =
+    analyzeResult?.trade_plan ?? tradePlanQuery.data ?? null;
+
+  const livePrice =
+    liveTicker?.last ??
+    liveDecision?.dataQuality?.current_price ??
+    liveTradePlan?.dataQuality?.current_price ??
+    resolvedDecision?.data_quality?.current_price ??
+    resolvedTradePlan?.data_quality?.current_price ??
+    null;
+
+  const tradeLevelsModel = useMemo(() => {
+    const planFromLive: TradePlanResponse | null = liveTradePlan
+      ? ({
+          entry: liveTradePlan.entry,
+          stop_loss: liveTradePlan.stopLoss,
+          take_profit_targets: liveTradePlan.takeProfitTargets ?? [],
+          risk: liveTradePlan.risk,
+          plan_status: liveTradePlan.planStatus,
+          invalidation_conditions: liveTradePlan.invalidationConditions ?? [],
+          data_quality: liveTradePlan.dataQuality,
+        } as TradePlanResponse)
+      : null;
+
+    const decisionFromLive: DecisionResponse | null = liveDecision
+      ? ({
+          decision: liveDecision.decision,
+          decision_reason: liveDecision.decisionReason,
+          stop_loss_price: liveDecision.stopLossPrice,
+          take_profit_prices: liveDecision.takeProfitPrices ?? [],
+          primary_rr: liveDecision.primaryRr,
+          entry_confirmation: liveDecision.entryConfirmation,
+          entry_zone_summary: liveDecision.entryZoneSummary,
+          data_quality: liveDecision.dataQuality,
+        } as DecisionResponse)
+      : null;
+
+    return buildAnalyzerTradeLevels({
+      decision: resolvedDecision ?? decisionFromLive,
+      tradePlan: resolvedTradePlan ?? planFromLive,
+      snapshotDecision: asFinalDecision(snapshot?.decision),
+      snapshotEntryRef: snapshot?.entry_reference_price ?? null,
+      snapshotEntryLow: snapshot?.entry_low ?? null,
+      snapshotEntryHigh: snapshot?.entry_high ?? null,
+      snapshotStop: snapshot?.stop_loss_price ?? null,
+      snapshotTps: snapshot?.take_profit_prices ?? null,
+      snapshotPrimaryRr: snapshot?.primary_rr ?? null,
+      livePrice,
+    });
+  }, [
+    resolvedDecision,
+    resolvedTradePlan,
+    liveTradePlan,
+    liveDecision,
+    snapshot,
+    livePrice,
+  ]);
+
+  const decisionValue =
+    resolvedDecision?.decision ??
+    liveDecision?.decision ??
+    asFinalDecision(snapshot?.decision);
+  const decisionReason =
+    resolvedDecision?.decision_reason ??
+    liveDecision?.decisionReason ??
+    snapshot?.decision_reason ??
+    null;
+
+  const screenshotObserved =
+    analyzeResult?.price_comparison?.screenshot_observed_price ??
+    analyzeResult?.recognition?.observed_last_price ??
+    vision?.observed_last_price ??
+    null;
 
   return (
     <div className="flex h-full min-h-[calc(100dvh-4rem)] flex-col gap-4 p-4 md:p-5 xl:flex-row">
-      <aside className="w-full shrink-0 space-y-4 xl:w-72">
+      <aside className="w-full shrink-0 space-y-4 xl:w-80">
         <div className="rounded-lg border border-terminal-border bg-terminal-panel p-4">
           <h1 className="flex items-center gap-2 font-display text-lg font-semibold text-terminal-text">
             <ScanSearch className="h-5 w-5 text-terminal-accent" />
-            AI Chart Analyzer
+            {analyzerTitle()}
           </h1>
-          <p className="mt-1 text-xs text-terminal-muted">
-            Live engines + AI explanation / vision (Phase 5.4). Analysis only.
+          <p className="mt-1 text-xs text-terminal-muted">{analyzerDescription()}</p>
+          <p className="mt-2 text-[10px] uppercase tracking-[0.14em] text-terminal-muted">
+            Analysis only — no order execution
           </p>
 
           <div className="mt-4 space-y-3">
-            <Field label="Exchange">
-              <div className="rounded-md border border-terminal-border bg-terminal-surface px-3 py-2 text-sm capitalize text-terminal-text">
-                {exchange}
-              </div>
-            </Field>
-            <Field label="Market type">
-              <div className="rounded-md border border-terminal-border bg-terminal-surface px-3 py-2 text-sm text-terminal-text">
-                {marketType.replaceAll("_", " ")}
-              </div>
-            </Field>
+            <AnalysisModeSelector
+              mode={mode}
+              onChange={handleModeChange}
+              disabled={analyzeLoading || recognizeLoading}
+            />
 
-            <MarketControls />
-
-            <Field label="Chart screenshot">
-              <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md border border-dashed border-terminal-border bg-terminal-surface/60 px-3 py-6 text-center transition hover:border-terminal-accent/50">
-                <Upload className="h-5 w-5 text-terminal-muted" />
-                <span className="text-xs text-terminal-muted">
-                  PNG / JPEG / WebP — optional vision
-                </span>
-                <input
-                  type="file"
-                  accept="image/png,image/jpeg,image/jpg,image/webp"
-                  className="hidden"
-                  onChange={(e) => {
-                    onPickImage(e.target.files?.[0]);
-                    e.target.value = "";
-                  }}
-                />
-              </label>
-              {fileName ? (
-                <div className="mt-2 flex items-start justify-between gap-2 text-[11px] text-terminal-muted">
-                  <div className="min-w-0">
-                    <p className="truncate">{fileName}</p>
-                    <p>{fileSize != null ? formatFileSize(fileSize) : ""}</p>
+            {mode === "LIVE_MARKET" ? (
+              <>
+                <Field label="Exchange">
+                  <div className="rounded-md border border-terminal-border bg-terminal-surface px-3 py-2 text-sm capitalize text-terminal-text">
+                    {exchange}
                   </div>
-                  <button
-                    type="button"
-                    onClick={clearImage}
-                    className="rounded border border-terminal-border p-1 hover:text-terminal-text"
-                    aria-label="Remove image"
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              ) : null}
-              {uploadError ? (
-                <p className="mt-1 text-[11px] text-terminal-short">{uploadError}</p>
-              ) : null}
-            </Field>
+                </Field>
+                <Field label="Market type">
+                  <div className="rounded-md border border-terminal-border bg-terminal-surface px-3 py-2 text-sm text-terminal-text">
+                    {marketType.replaceAll("_", " ")}
+                  </div>
+                </Field>
+                <MarketControls />
+                <p className="text-[11px] text-terminal-muted">
+                  Analyze captures the live chart image automatically and runs Vision alongside
+                  deterministic engines.
+                </p>
+              </>
+            ) : (
+              <>
+                <ChartImageUpload
+                  file={uploadFile}
+                  previewUrl={mode === "UPLOADED_IMAGE" ? previewUrl : null}
+                  onFileChange={handleUploadChange}
+                  disabled={analyzeLoading || recognizeLoading}
+                />
+                <ChartRecognitionPanel
+                  vision={vision}
+                  draft={recognitionDraft}
+                  onDraftChange={(patch) => {
+                    setRecognitionDraft((prev) => {
+                      const merged = { ...prev, ...patch };
+                      applyRecognitionToStore(merged);
+                      return merged;
+                    });
+                  }}
+                  recognizing={recognizeLoading}
+                  disabled={analyzeLoading}
+                />
+                <p className="text-[11px] text-terminal-muted">
+                  Deterministic SMC levels come from verified Binance/Bybit OHLCV for the
+                  confirmed symbol — never from the screenshot pixels alone.
+                </p>
+              </>
+            )}
 
             <button
               type="button"
-              disabled={analyzeLoading || !symbol}
+              disabled={analyzeDisabled}
               onClick={() => void runAnalyze()}
               className={cn(
                 "h-10 w-full rounded-md text-sm font-medium transition",
-                analyzeLoading || !symbol
+                analyzeDisabled
                   ? "cursor-not-allowed bg-terminal-accent/40 text-terminal-bg"
                   : "bg-terminal-accent text-terminal-bg hover:opacity-90",
               )}
+              data-testid="analyze-button"
             >
-              {analyzeLoading ? "Analyzing…" : "Analyze"}
-            </button>
-
-            <button
-              type="button"
-              disabled={visionLoading || !imageFile}
-              onClick={() => void runVision()}
-              className={cn(
-                "h-9 w-full rounded-md border text-sm transition",
-                visionLoading || !imageFile
-                  ? "cursor-not-allowed border-terminal-border text-terminal-muted"
-                  : "border-terminal-accent/50 text-terminal-text hover:border-terminal-accent",
-              )}
-            >
-              {visionLoading ? "Vision…" : "Run Vision on screenshot"}
+              {analyzeLabel}
             </button>
 
             {analyzeError ? (
               <p className="text-[11px] text-terminal-short">{analyzeError}</p>
             ) : null}
-            {visionError ? (
-              <p className="text-[11px] text-terminal-short">{visionError}</p>
+            {visionNote ? (
+              <p className="text-[11px] text-amber-200" data-testid="vision-status">
+                {visionNote}
+              </p>
+            ) : visionPhase === "running" ? (
+              <p className="text-[11px] text-terminal-muted" data-testid="vision-status">
+                Vision analysis running…
+              </p>
+            ) : analyzeResult?.vision_status === "ok" ? (
+              <p className="text-[11px] text-terminal-long" data-testid="vision-status">
+                Vision complete
+              </p>
+            ) : null}
+            {analyzeResult?.persistence_status ? (
+              <p className="text-[11px] text-terminal-muted" data-testid="persistence-status">
+                {analyzeResult.persistence_status === "saved" ||
+                analyzeResult.persistence_status === "idempotent"
+                  ? "Saved to history"
+                  : analyzeResult.persistence_status === "disabled"
+                    ? "Persistence disabled"
+                    : analyzeResult.persistence_detail ||
+                      "History saving unavailable"}
+              </p>
+            ) : null}
+            {analyzeResult?.analysis_mode ? (
+              <p className="text-[10px] uppercase tracking-[0.12em] text-terminal-muted">
+                Mode {analyzeResult.analysis_mode.replaceAll("_", " ")}
+              </p>
             ) : null}
           </div>
+        </div>
+
+        <div className="rounded-lg border border-terminal-border bg-terminal-panel p-3 xl:block">
+          <p className="text-[11px] uppercase tracking-[0.14em] text-terminal-muted">
+            Chart plan legend
+          </p>
+          {planLegend || snapshot ? (
+            <div className="mt-2 space-y-2 text-xs text-terminal-text">
+              {planLegend ? (
+                <TradePlanChartStatusBadge status={planLegend.status} />
+              ) : null}
+              <p className="text-[10px] text-terminal-muted">
+                Overlay lines use deterministic Entry / SL / TP values only.
+              </p>
+            </div>
+          ) : (
+            <p className="mt-2 text-sm text-terminal-muted">
+              Entry / SL / TP appear on the chart when a plan is available.
+            </p>
+          )}
         </div>
       </aside>
 
       <section className="flex min-w-0 flex-1 flex-col gap-4">
+        <AnalyzerMarketOverview
+          exchange={displayExchange}
+          marketType={displayMarketType}
+          symbol={displaySymbol}
+          timeframe={displayTimeframe}
+          analysisMode={mode}
+          screenshotObservedPrice={screenshotObserved}
+          verifiedPriceTimestamp={
+            analyzeResult?.price_comparison?.verified_price_timestamp ?? null
+          }
+          verifiedPriceSource={
+            analyzeResult?.price_comparison?.verified_price_source ?? null
+          }
+          error={
+            tradePlanQuery.isError
+              ? (tradePlanQuery.error as Error).message
+              : decisionQuery.isError
+                ? (decisionQuery.error as Error).message
+                : null
+          }
+        />
+
+        <div className="grid gap-4 lg:grid-cols-2">
+          <AnalyzerDecisionStatus
+            decision={decisionValue}
+            reason={decisionReason}
+            loading={
+              decisionQuery.isLoading &&
+              !decisionQuery.isFetched &&
+              !liveDecision &&
+              !snapshot
+            }
+          />
+          <AnalyzerTradeLevels
+            model={tradeLevelsModel}
+            loading={
+              tradePlanQuery.isLoading &&
+              !tradePlanQuery.isFetched &&
+              decisionQuery.isLoading &&
+              !decisionQuery.isFetched &&
+              !liveTradePlan &&
+              !liveDecision &&
+              !snapshot
+            }
+          />
+        </div>
+
         <MarketChartPanel
           exchange={exchange}
           marketType={marketType}
           symbol={symbol}
           timeframe={timeframe}
+          title={chartTitle}
           heightClass="h-[min(72vh,720px)]"
           chartOverlays={chartOverlays}
           structureOverlays={structureOverlays}
@@ -335,137 +704,72 @@ export default function ChartAnalyzerPage() {
           obFvgOverlays={obFvgOverlays}
           enableTradePlanVisuals
           onTradePlanLegendChange={onTradePlanLegendChange}
+          chartRef={chartHandleRef}
         />
 
-        <MtfOverviewPanel
+        <SmcAnalysisSections
           exchange={exchange}
           marketType={marketType}
           symbol={symbol}
+          timeframe={timeframe}
+          structureOverlays={structureOverlays}
+          onStructureOverlaysChange={setStructureOverlays}
+          liquidityOverlays={liquidityOverlays}
+          onLiquidityOverlaysChange={setLiquidityOverlays}
+          obFvgOverlays={obFvgOverlays}
+          onObFvgOverlaysChange={setObFvgOverlays}
+          chartOverlays={chartOverlays}
+          onChartOverlaysChange={setChartOverlays}
+          decision={analyzeResult?.decision ?? decisionQuery.data ?? null}
+          snapshot={snapshot}
         />
 
-        <ConfluencePanel
-          exchange={exchange}
-          marketType={marketType}
-          symbol={symbol}
-        />
-
-        <TradePlanPanel
-          exchange={exchange}
-          marketType={marketType}
-          symbol={symbol}
-        />
-
-        <DecisionPanel
-          exchange={exchange}
-          marketType={marketType}
-          symbol={symbol}
-        />
-
-        {preview ? (
+        {mode === "LIVE_MARKET" && previewUrl ? (
           <div className="rounded-lg border border-terminal-border bg-terminal-panel p-3">
             <p className="mb-2 text-[11px] uppercase tracking-[0.14em] text-terminal-muted">
-              Screenshot preview
+              Auto-captured chart (Vision input)
             </p>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={preview}
-              alt="Uploaded chart preview"
+              src={previewUrl}
+              alt="Auto-captured live chart"
               className="max-h-[280px] w-full object-contain"
             />
           </div>
         ) : null}
 
-        {snapshot ? <DeterministicSnapshotPanel snapshot={snapshot} /> : null}
-        <AiExplanationPanel explanation={analyzeResult?.explanation} />
-        <VisionObservationsPanel vision={vision} />
-        <VisionComparisonPanel
-          comparison={comparison ?? analyzeResult?.explanation?.vision_comparison}
+        <PriceComparisonPanel
+          comparison={analyzeResult?.price_comparison}
+          analysisMode={analyzeResult?.analysis_mode}
         />
-      </section>
 
-      <aside className="w-full shrink-0 space-y-3 xl:w-80">
-        <StructurePanel
-          exchange={exchange}
-          marketType={marketType}
-          symbol={symbol}
-          timeframe={timeframe}
-          overlays={structureOverlays}
-          onOverlaysChange={setStructureOverlays}
-        />
-        <LiquidityPanel
-          exchange={exchange}
-          marketType={marketType}
-          symbol={symbol}
-          timeframe={timeframe}
-          overlays={liquidityOverlays}
-          onOverlaysChange={setLiquidityOverlays}
-        />
-        <ObFvgPanel
-          exchange={exchange}
-          marketType={marketType}
-          symbol={symbol}
-          timeframe={timeframe}
-          overlays={obFvgOverlays}
-          onOverlaysChange={setObFvgOverlays}
-        />
-        <IndicatorsPanel
-          exchange={exchange}
-          marketType={marketType}
-          symbol={symbol}
-          timeframe={timeframe}
-          chartOverlays={chartOverlays}
-          onChartOverlaysChange={setChartOverlays}
-        />
-        <Panel title="AI Analysis Summary">
-          {analyzeResult?.explanation?.summary ? (
-            <p className="text-sm text-terminal-text">{analyzeResult.explanation.summary}</p>
-          ) : (
-            <Empty>Press Analyze to generate an explanation from engine output.</Empty>
-          )}
-        </Panel>
-        <Panel title="Trade Decision">
-          <p className="mt-1 text-xs text-terminal-muted">
-            {snapshot
-              ? `${snapshot.decision} — analysis only, no order execution.`
-              : "See Final Decision panel — analysis only, no order execution."}
-          </p>
-        </Panel>
-        <Panel title="Plan levels">
-          {planLegend || snapshot ? (
-            <div className="space-y-2 text-xs text-terminal-text">
-              {planLegend ? (
-                <TradePlanChartStatusBadge status={planLegend.status} />
-              ) : null}
-              <p className="font-mono text-[11px] text-terminal-muted">
-                Entry{" "}
-                {snapshot?.entry_reference_price ?? planLegend?.entry ?? "—"} · SL{" "}
-                {snapshot?.stop_loss_price ?? planLegend?.stopLoss ?? "—"}
-              </p>
-              <p className="font-mono text-[11px] text-terminal-muted">
-                TPs{" "}
-                {(snapshot?.take_profit_prices?.length
-                  ? snapshot.take_profit_prices.join(" · ")
-                  : null) ??
-                  `TP1 ${planLegend?.tp1 ?? "—"} · TP2 ${planLegend?.tp2 ?? "—"} · TP3 ${planLegend?.tp3 ?? "—"}`}
-              </p>
-              <p className="text-[10px] text-terminal-muted">
-                Backend-sourced levels only — not AI-invented prices.
-              </p>
-            </div>
-          ) : (
-            <Empty>Entry / SL / TP appear on the chart when a plan is available.</Empty>
-          )}
-        </Panel>
-        <Panel title="Confluence Score">
-          {snapshot ? (
-            <p className="font-mono text-xs text-terminal-text">
-              B {snapshot.confluence_bullish ?? "—"} / S {snapshot.confluence_bearish ?? "—"}
+        <div className="grid gap-4 lg:grid-cols-3">
+          <div className="space-y-2">
+            <p className="text-[11px] uppercase tracking-[0.14em] text-terminal-accent">
+              A. Deterministic engine results
             </p>
-          ) : (
-            <Empty>See Confluence panel (Phase 4.2) — preliminary only</Empty>
-          )}
-        </Panel>
-      </aside>
+            <AiExplanationPanel explanation={analyzeResult?.explanation} />
+          </div>
+          <div className="space-y-2">
+            <p className="text-[11px] uppercase tracking-[0.14em] text-terminal-muted">
+              B. AI visual observations
+            </p>
+            <VisionObservationsPanel vision={vision} />
+            <VisionComparisonPanel
+              comparison={comparison ?? analyzeResult?.explanation?.vision_comparison}
+            />
+          </div>
+          <div className="space-y-2">
+            <p className="text-[11px] uppercase tracking-[0.14em] text-terminal-muted">
+              C. Screenshot recognition / OCR
+            </p>
+            <ScreenshotRecognitionResultsPanel
+              recognition={analyzeResult?.recognition}
+              vision={vision}
+            />
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
@@ -477,17 +781,4 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
       {children}
     </label>
   );
-}
-
-function Panel({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <div className="rounded-lg border border-terminal-border bg-terminal-panel p-3">
-      <h3 className="text-[11px] uppercase tracking-[0.14em] text-terminal-muted">{title}</h3>
-      <div className="mt-2">{children}</div>
-    </div>
-  );
-}
-
-function Empty({ children }: { children: ReactNode }) {
-  return <p className="text-sm text-terminal-muted">{children}</p>;
 }

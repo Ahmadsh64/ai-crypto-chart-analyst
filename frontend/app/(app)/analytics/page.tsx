@@ -5,8 +5,8 @@ export default function AnalyticsPage() {
   return (
     <PageStub
       title="Performance Analytics"
-      description="Win rate, expectancy, drawdown, and other simulated performance metrics."
-      phase="Phase 6"
+      description="Standalone win rate / expectancy lives here in Phase 6.0.6+. Performance panels already ship inside Historical Replay."
+      phase="Coming later · Phase 6.0.6+"
       icon={BarChart3}
     />
   );

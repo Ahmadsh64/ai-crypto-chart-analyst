@@ -97,39 +97,62 @@ class BybitExchange(BaseExchange):
             return False
 
     async def list_markets(self, market_type: MarketType) -> list[TradingPair]:
+        """Fetch all active USDT instruments (paginated via Bybit nextPageCursor)."""
         category = self._category(market_type)
-        payload = await self._get(
-            "/v5/market/instruments-info",
-            {"category": category, "limit": 1000},
-        )
-        result = payload.get("result") or {}
-        items = result.get("list") or []
         pairs: list[TradingPair] = []
-        for item in items:
-            status = (item.get("status") or "").upper()
-            if status and status not in {"TRADING", "ACTIVE"}:
-                continue
-            quote = item.get("quoteCoin") or ""
-            base = item.get("baseCoin") or ""
-            if quote != "USDT":
-                continue
-            if market_type == MarketType.LINEAR_PERPETUAL:
-                contract_type = (item.get("contractType") or "").lower()
-                if contract_type and "perpetual" not in contract_type:
+        cursor: str | None = None
+        # Hard cap pages to avoid runaway loops if the API misbehaves.
+        for _ in range(50):
+            params: dict[str, str | int] = {"category": category, "limit": 1000}
+            if cursor:
+                params["cursor"] = cursor
+            payload = await self._get("/v5/market/instruments-info", params)
+            result = payload.get("result") or {}
+            items = result.get("list") or []
+            for item in items:
+                status = (item.get("status") or "").upper()
+                if status and status not in {"TRADING", "ACTIVE"}:
                     continue
-            native = item.get("symbol") or ""
-            pairs.append(
-                TradingPair(
-                    symbol=f"{base}/{quote}" if base and quote else to_internal_symbol(native),
-                    base=base,
-                    quote=quote,
-                    exchange=self.exchange_id,
-                    market_type=market_type,
-                    native_symbol=native,
-                    active=True,
+                quote = item.get("quoteCoin") or ""
+                base = item.get("baseCoin") or ""
+                if quote != "USDT":
+                    continue
+                if market_type == MarketType.LINEAR_PERPETUAL:
+                    contract_type = (item.get("contractType") or "").lower()
+                    if contract_type and "perpetual" not in contract_type:
+                        continue
+                native = item.get("symbol") or ""
+                pairs.append(
+                    TradingPair(
+                        symbol=(
+                            f"{base}/{quote}"
+                            if base and quote
+                            else to_internal_symbol(native)
+                        ),
+                        base=base,
+                        quote=quote,
+                        exchange=self.exchange_id,
+                        market_type=market_type,
+                        native_symbol=native,
+                        active=True,
+                    )
                 )
-            )
-        return sorted(pairs, key=lambda p: p.symbol)
+            next_cursor = result.get("nextPageCursor") or ""
+            if not next_cursor or not items:
+                break
+            if next_cursor == cursor:
+                break
+            cursor = str(next_cursor)
+        # Deduplicate by native symbol while preserving sort order.
+        seen: set[str] = set()
+        unique: list[TradingPair] = []
+        for p in sorted(pairs, key=lambda x: x.symbol):
+            key = p.native_symbol or p.symbol
+            if key in seen:
+                continue
+            seen.add(key)
+            unique.append(p)
+        return unique
 
     async def _fetch_ohlcv_page(
         self,
@@ -215,6 +238,47 @@ class BybitExchange(BaseExchange):
         assert_homogeneous_series(candles)
         return candles
 
+    @staticmethod
+    def _ranking_volume(data: dict) -> float | None:
+        """Prefer turnover24h (quote) for cross-pair liquidity ranking."""
+        for key in ("turnover24h", "turnover_24h"):
+            raw = data.get(key)
+            if raw not in (None, ""):
+                try:
+                    return float(raw)
+                except (TypeError, ValueError):
+                    pass
+        raw = data.get("volume24h")
+        if raw not in (None, ""):
+            try:
+                return float(raw)
+            except (TypeError, ValueError):
+                return None
+        return None
+
+    def _ticker_from_item(self, data: dict, market_type: MarketType) -> Ticker | None:
+        native = data.get("symbol")
+        if not native:
+            return None
+        last = data.get("lastPrice")
+        if last in (None, ""):
+            return None
+        change = data.get("price24hPcnt")
+        change_pct = float(change) * 100 if change not in (None, "") else None
+        return Ticker(
+            symbol=to_internal_symbol(str(native)),
+            exchange=self.exchange_id,
+            market_type=market_type,
+            last=float(last),
+            bid=float(data["bid1Price"]) if data.get("bid1Price") not in (None, "") else None,
+            ask=float(data["ask1Price"]) if data.get("ask1Price") not in (None, "") else None,
+            high_24h=float(data["highPrice24h"]) if data.get("highPrice24h") else None,
+            low_24h=float(data["lowPrice24h"]) if data.get("lowPrice24h") else None,
+            volume_24h=self._ranking_volume(data),
+            change_pct_24h=change_pct,
+            updated_at=datetime.now(timezone.utc),
+        )
+
     async def fetch_ticker(self, symbol: str, market_type: MarketType) -> Ticker:
         native = to_native_symbol(symbol)
         payload = await self._get(
@@ -228,19 +292,28 @@ class BybitExchange(BaseExchange):
                 exchange=self.exchange_id.value,
                 status_code=404,
             )
-        data = items[0]
-        change = data.get("price24hPcnt")
-        change_pct = float(change) * 100 if change not in (None, "") else None
-        return Ticker(
-            symbol=to_internal_symbol(native),
-            exchange=self.exchange_id,
-            market_type=market_type,
-            last=float(data["lastPrice"]),
-            bid=float(data["bid1Price"]) if data.get("bid1Price") not in (None, "") else None,
-            ask=float(data["ask1Price"]) if data.get("ask1Price") not in (None, "") else None,
-            high_24h=float(data["highPrice24h"]) if data.get("highPrice24h") else None,
-            low_24h=float(data["lowPrice24h"]) if data.get("lowPrice24h") else None,
-            volume_24h=float(data["volume24h"]) if data.get("volume24h") else None,
-            change_pct_24h=change_pct,
-            updated_at=datetime.now(timezone.utc),
+        ticker = self._ticker_from_item(items[0], market_type)
+        if ticker is None:
+            raise ExchangeRequestError(
+                f"Invalid Bybit ticker for {native}",
+                exchange=self.exchange_id.value,
+                status_code=404,
+            )
+        return ticker
+
+    async def fetch_tickers_24h(self, market_type: MarketType) -> list[Ticker]:
+        """Bulk category tickers for universe volume ranking."""
+        self.ensure_market_type(market_type)
+        payload = await self._get(
+            "/v5/market/tickers",
+            {"category": self._category(market_type)},
         )
+        items = (payload.get("result") or {}).get("list") or []
+        out: list[Ticker] = []
+        for item in items:
+            if not isinstance(item, dict):
+                continue
+            ticker = self._ticker_from_item(item, market_type)
+            if ticker is not None:
+                out.append(ticker)
+        return out

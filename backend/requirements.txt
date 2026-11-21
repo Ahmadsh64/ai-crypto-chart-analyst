@@ -11,21 +11,21 @@ pydantic==2.10.4
 pydantic-settings==2.7.0
 email-validator==2.2.0
 
-# Database
+# Database (Phase 6.0.2 — Supabase PostgreSQL via asyncpg)
 sqlalchemy==2.0.36
 alembic==1.14.0
 asyncpg==0.30.0
+greenlet>=3.1.1
 psycopg2-binary==2.9.10
 
 # Market data & quantitative
 ccxt==4.4.49
 pandas==2.2.3
 numpy==2.2.1
-pandas-ta==0.3.14b
 
 # HTTP / async
 httpx==0.28.1
-aiohttp==3.11.11
+aiohttp==3.10.11
 websockets==14.1
 
 # AI
@@ -38,6 +38,7 @@ redis==5.2.1
 python-dotenv==1.0.1
 orjson==3.10.12
 pillow==11.0.0
+PyJWT==2.10.1
 
 # Reporting (Phase 5.2.6)
 reportlab==4.2.5

@@ -53,6 +53,16 @@ class BaseExchange(ABC):
     ) -> Ticker:
         """Fetch last price / 24h stats for a symbol."""
 
+    async def fetch_tickers_24h(self, market_type: MarketType) -> list[Ticker]:
+        """
+        Bulk 24h tickers for ranking (optional).
+
+        Default: empty list — adapters should override with a single bulk endpoint
+        when the exchange supports it. volume_24h should prefer quote/turnover.
+        """
+        self.ensure_market_type(market_type)
+        return []
+
     def ensure_market_type(self, market_type: MarketType) -> None:
         if market_type not in self.supported_market_types:
             from app.exchanges.exceptions import ExchangeUnsupportedError

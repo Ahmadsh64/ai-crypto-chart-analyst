@@ -1,6 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   CandlestickSeries,
   ColorType,
@@ -93,6 +100,12 @@ export interface ObFvgChartData {
   bearishFvgs: FairValueGap[];
 }
 
+export interface CandlestickChartHandle {
+  /** Lightweight Charts screenshot of the currently rendered chart. */
+  takeScreenshot: () => HTMLCanvasElement | null;
+  isReady: () => boolean;
+}
+
 interface CandlestickChartProps {
   candles: Candle[];
   liveCandle?: LiveCandle | null;
@@ -167,24 +180,28 @@ function formatHoverTime(iso: string): string {
   return d.toISOString().replace("T", " ").replace(/\.\d{3}Z$/, " UTC");
 }
 
-export function CandlestickChart({
-  candles,
-  liveCandle,
-  className,
-  showVolume = true,
-  seriesKey,
-  overlays = [],
-  structure = null,
-  structureOverlays = [],
-  liquidity = null,
-  liquidityOverlays = [],
-  obFvg = null,
-  obFvgOverlays = [],
-  tradeMarkers = [],
-  tradePriceLines = [],
-  planZones = [],
-  onTradeMarkerClick,
-}: CandlestickChartProps) {
+export const CandlestickChart = forwardRef<CandlestickChartHandle, CandlestickChartProps>(
+  function CandlestickChart(
+    {
+      candles,
+      liveCandle,
+      className,
+      showVolume = true,
+      seriesKey,
+      overlays = [],
+      structure = null,
+      structureOverlays = [],
+      liquidity = null,
+      liquidityOverlays = [],
+      obFvg = null,
+      obFvgOverlays = [],
+      tradeMarkers = [],
+      tradePriceLines = [],
+      planZones = [],
+      onTradeMarkerClick,
+    },
+    ref,
+  ) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const candleSeriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
@@ -204,6 +221,23 @@ export function CandlestickChart({
   const candleLookupRef = useRef<Map<number, OhlcHoverInfo>>(new Map());
   const fittedKeyRef = useRef<string | null>(null);
   const [hover, setHover] = useState<OhlcHoverInfo | null>(null);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      takeScreenshot: () => {
+        const chart = chartRef.current;
+        if (!chart) return null;
+        try {
+          return chart.takeScreenshot();
+        } catch {
+          return null;
+        }
+      },
+      isReady: () => Boolean(chartRef.current && candleSeriesRef.current),
+    }),
+    [],
+  );
 
   useEffect(() => {
     onTradeMarkerClickRef.current = onTradeMarkerClick;
@@ -689,7 +723,7 @@ export function CandlestickChart({
       <div ref={containerRef} className="min-h-0 flex-1 w-full" />
     </div>
   );
-}
+});
 
 function OhlcField({
   label,

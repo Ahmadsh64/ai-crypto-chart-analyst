@@ -17,7 +17,8 @@ export default function SettingsPage() {
       <div>
         <h1 className="font-display text-2xl font-semibold text-terminal-text">Settings</h1>
         <p className="mt-1 text-sm text-terminal-muted">
-          Conservative risk defaults. Persistence arrives with PostgreSQL in Phase 6.
+          Conservative risk defaults. Values stay in this browser session — settings
+          persistence is not wired yet (Analyze history already uses PostgreSQL when configured).
         </p>
       </div>
 

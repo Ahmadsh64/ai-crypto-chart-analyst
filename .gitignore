@@ -24,6 +24,8 @@ frontend/.turbo/
 frontend/coverage/
 frontend/*.tsbuildinfo
 frontend/next-env.d.ts
+# Accidental nested installs
+backend/frontend/
 
 # IDE / OS
 .vscode/
@@ -48,3 +50,10 @@ infra/docker/data/
 *.key
 credentials.json
 service-account*.json
+# Keep official Supabase Root CA (public cert) trackable if committed intentionally;
+# do not commit private keys or duplicate CA downloads.
+backend/prod-ca-2021 (1).crt
+
+# Local agent / editor caches
+.cursor/
+**/agent-transcripts/

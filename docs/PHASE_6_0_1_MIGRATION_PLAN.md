@@ -31,12 +31,13 @@ Expand-only initially. Compatibility note: if an early draft migration omitted `
 
 ## 3. Implementation sequence
 
-### Phase 6.0.2 — Persistence foundation
-1. Async SQLAlchemy engine/session + feature flag.
-2. ORM models matching refined schema.
-3. Migrations 1–3.
-4. Health: database component.
-5. Introduce **deterministic ID helpers** for persistence path (and plan engine alignment) without changing fill/ambiguity math.
+### Phase 6.0.2 — Persistence foundation ✅
+1. Async SQLAlchemy engine/session + feature flag. ✅
+2. ORM models matching refined schema. ✅
+3. Migrations 1–3. ✅
+4. Health: database component. ✅
+5. Introduce **deterministic ID helpers** for persistence path (and plan engine alignment) without changing fill/ambiguity math. ✅  
+   Details: `docs/PHASE_6_0_2_PERSISTENCE_FOUNDATION.md`
 
 ### Phase 6.0.3 — Analysis history
 1. Orchestration generates `analysis_run_id`.

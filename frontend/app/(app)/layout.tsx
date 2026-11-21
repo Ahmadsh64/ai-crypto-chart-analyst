@@ -1,4 +1,5 @@
 import { Suspense, type ReactNode } from "react";
+import { RequireAuth } from "@/components/auth/require-auth";
 import { AppShell } from "@/components/layout/app-shell";
 
 export default function AppLayout({ children }: { children: ReactNode }) {
@@ -10,7 +11,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         </div>
       }
     >
-      <AppShell>{children}</AppShell>
+      <RequireAuth>
+        <AppShell>{children}</AppShell>
+      </RequireAuth>
     </Suspense>
   );
 }

@@ -1,13 +1,5 @@
-import { Layers } from "lucide-react";
-import { PageStub } from "@/components/common/page-stub";
+import { SmcAnalysisPage } from "@/components/analysis/smc-analysis-page";
 
-export default function MarketAnalysisPage() {
-  return (
-    <PageStub
-      title="SMC / ICT Analysis"
-      description="Market structure, liquidity, order blocks, FVGs, kill zones, and session levels."
-      phase="Phase 3"
-      icon={Layers}
-    />
-  );
+export default function MarketAnalysisRoute() {
+  return <SmcAnalysisPage />;
 }

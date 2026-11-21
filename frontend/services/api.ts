@@ -43,11 +43,19 @@ import type {
   AiCompareResponse,
   AnalysisSnapshot,
   VisionResult,
+  AnalysisHistoryListParams,
+  AnalysisHistoryListResponse,
+  AnalysisHistoryDetail,
+  OpportunityListResponse,
+  OpportunityStatus,
+  ScannerStatusResponse,
+  ScanTriggerResponse,
 } from "@/types/api";
 import {
   downloadBlob,
   filenameFromContentDisposition,
 } from "@/lib/download";
+import { getAccessToken } from "@/lib/supabase/client";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
 
@@ -61,21 +69,51 @@ export class ApiError extends Error {
   }
 }
 
+function formatApiDetail(detail: unknown, fallback: string): string {
+  if (typeof detail === "string" && detail.trim()) return detail;
+  if (detail && typeof detail === "object") {
+    const obj = detail as { message?: unknown; code?: unknown; detail?: unknown };
+    if (typeof obj.message === "string" && obj.message.trim()) {
+      return typeof obj.code === "string" ? `${obj.code}: ${obj.message}` : obj.message;
+    }
+    if (typeof obj.detail === "string" && obj.detail.trim()) return obj.detail;
+  }
+  return fallback;
+}
+
+async function buildHeaders(
+  initHeaders?: HeadersInit,
+  options?: { json?: boolean },
+): Promise<Record<string, string>> {
+  const headers: Record<string, string> = {};
+  if (options?.json !== false) {
+    headers["Content-Type"] = "application/json";
+  }
+  if (initHeaders) {
+    const extra = new Headers(initHeaders);
+    extra.forEach((value, key) => {
+      headers[key] = value;
+    });
+  }
+  const token = await getAccessToken();
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+  return headers;
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_URL}${path}`, {
     ...init,
-    headers: {
-      "Content-Type": "application/json",
-      ...(init?.headers ?? {}),
-    },
+    headers: await buildHeaders(init?.headers),
     cache: "no-store",
   });
 
   if (!response.ok) {
     let detail = response.statusText;
     try {
-      const body = (await response.json()) as { detail?: string };
-      if (body.detail) detail = body.detail;
+      const body = (await response.json()) as { detail?: unknown };
+      detail = formatApiDetail(body.detail, response.statusText);
     } catch {
       /* ignore */
     }
@@ -336,6 +374,7 @@ export const api = {
     const response = await fetch(`${API_URL}/api/v1/ai/vision/analyze`, {
       method: "POST",
       body: form,
+      headers: await buildHeaders(undefined, { json: false }),
       signal,
       cache: "no-store",
     });
@@ -353,6 +392,55 @@ export const api = {
       throw new ApiError(detail, response.status);
     }
     return response.json() as Promise<AiVisionAnalyzeResponse>;
+  },
+
+  /** Unified deterministic Analyze + optional chart Vision (one persistence bundle). */
+  aiAnalyzeWithVision: async (
+    args: {
+      exchange: ExchangeId;
+      marketType: MarketType;
+      symbol: string;
+      timeframe?: string;
+      accountBalance?: number;
+      riskPercent?: number;
+      analysisMode?: "LIVE_MARKET" | "UPLOADED_IMAGE";
+      file?: File | null;
+    },
+    signal?: AbortSignal,
+  ) => {
+    const form = new FormData();
+    form.append("exchange", args.exchange);
+    form.append("market_type", args.marketType);
+    form.append("symbol", args.symbol);
+    form.append("analysis_mode", args.analysisMode ?? "LIVE_MARKET");
+    if (args.timeframe) form.append("timeframe", args.timeframe);
+    if (args.accountBalance != null) {
+      form.append("account_balance", String(args.accountBalance));
+    }
+    if (args.riskPercent != null) {
+      form.append("risk_percent", String(args.riskPercent));
+    }
+    if (args.file) form.append("file", args.file);
+    const response = await fetch(`${API_URL}/api/v1/ai/analyze-with-vision`, {
+      method: "POST",
+      body: form,
+      headers: await buildHeaders(undefined, { json: false }),
+      signal,
+      cache: "no-store",
+    });
+    if (!response.ok) {
+      let detail = response.statusText;
+      try {
+        const body = (await response.json()) as {
+          detail?: string | { code?: string; message?: string };
+        };
+        detail = formatApiDetail(body.detail, response.statusText);
+      } catch {
+        /* ignore */
+      }
+      throw new ApiError(detail, response.status);
+    }
+    return response.json() as Promise<AiAnalyzeResponse>;
   },
   aiCompare: (
     args: { snapshot: AnalysisSnapshot; vision: VisionResult },
@@ -625,7 +713,10 @@ export const api = {
   downloadReplayReportCsv: async (sessionId: string, kind: ReportCsvKind) => {
     const response = await fetch(
       `${API_URL}/api/v1/replay/sessions/${sessionId}/report/export/csv?kind=${encodeURIComponent(kind)}`,
-      { cache: "no-store" },
+      {
+        cache: "no-store",
+        headers: await buildHeaders(undefined, { json: false }),
+      },
     );
     if (!response.ok) {
       let detail = response.statusText;
@@ -648,7 +739,10 @@ export const api = {
   downloadReplayReportPdf: async (sessionId: string) => {
     const response = await fetch(
       `${API_URL}/api/v1/replay/sessions/${sessionId}/report/export/pdf`,
-      { cache: "no-store" },
+      {
+        cache: "no-store",
+        headers: await buildHeaders(undefined, { json: false }),
+      },
     );
     if (!response.ok) {
       let detail = response.statusText;
@@ -667,4 +761,67 @@ export const api = {
     );
     downloadBlob(blob, filename);
   },
+
+  historyAnalyses: (params: AnalysisHistoryListParams = {}, signal?: AbortSignal) =>
+    request<AnalysisHistoryListResponse>(
+      `/api/v1/history/analyses${qs({
+        limit: params.limit,
+        offset: params.offset,
+        exchange: params.exchange,
+        market_type: params.market_type,
+        symbol: params.symbol,
+        timeframe: params.timeframe,
+        decision: params.decision,
+        consistency_status: params.consistency_status,
+        from: params.from,
+        to: params.to,
+      })}`,
+      { signal },
+    ),
+
+  historyAnalysisByRun: (analysisRunId: string, signal?: AbortSignal) =>
+    request<AnalysisHistoryDetail>(
+      `/api/v1/history/analyses/by-run/${encodeURIComponent(analysisRunId)}`,
+      { signal },
+    ),
+
+  opportunities: (
+    params: {
+      exchange?: ExchangeId;
+      marketType?: MarketType;
+      timeframe?: Timeframe;
+      direction?: "LONG" | "SHORT";
+      status?: OpportunityStatus;
+      search?: string;
+      actionableOnly?: boolean;
+      sort?: "confluence" | "freshness" | "entry_distance" | "rank";
+      limit?: number;
+      offset?: number;
+    } = {},
+    signal?: AbortSignal,
+  ) =>
+    request<OpportunityListResponse>(
+      `/api/v1/opportunities${qs({
+        exchange: params.exchange,
+        market_type: params.marketType,
+        timeframe: params.timeframe,
+        direction: params.direction,
+        status: params.status,
+        search: params.search,
+        actionable_only: params.actionableOnly ? "true" : undefined,
+        sort: params.sort,
+        limit: params.limit,
+        offset: params.offset,
+      })}`,
+      { signal },
+    ),
+
+  opportunitiesStatus: (signal?: AbortSignal) =>
+    request<ScannerStatusResponse>(`/api/v1/opportunities/status`, { signal }),
+
+  opportunitiesScan: (signal?: AbortSignal) =>
+    request<ScanTriggerResponse>(`/api/v1/opportunities/scan`, {
+      method: "POST",
+      signal,
+    }),
 };

@@ -1,6 +1,7 @@
 "use client";
 
 import type { ExchangeId, MarketType, Timeframe } from "@/types/api";
+import { getAccessToken } from "@/lib/supabase/client";
 
 export type WsConnectionStatus =
   | "disconnected"
@@ -107,13 +108,17 @@ export interface DecisionSubscribeRequest {
 type MessageListener = (message: MarketWsMessage) => void;
 type StatusListener = (status: WsConnectionStatus) => void;
 
-function wsUrl(): string {
+async function wsUrl(): Promise<string> {
   const api = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
   const url = new URL(api);
   url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
   url.pathname = "/ws/market";
   url.search = "";
   url.hash = "";
+  const token = await getAccessToken();
+  if (token) {
+    url.searchParams.set("access_token", token);
+  }
   return url.toString();
 }
 
@@ -145,6 +150,10 @@ class MarketWebsocketClient {
   private lastPayloadByKey = new Map<string, string>();
 
   connect() {
+    void this.connectAsync();
+  }
+
+  private async connectAsync() {
     this.shouldRun = true;
     if (
       this.socket &&
@@ -153,7 +162,7 @@ class MarketWebsocketClient {
       return;
     }
     this.setStatus("connecting");
-    const socket = new WebSocket(wsUrl());
+    const socket = new WebSocket(await wsUrl());
     this.socket = socket;
 
     socket.onopen = () => {

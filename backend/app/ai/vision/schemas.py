@@ -43,6 +43,14 @@ class VisionResult(BaseModel):
     detected_timeframe: str | None = None
     detected_symbol: str | None = None
     detected_chart_type: str | None = None
+    # Phase 5.4.2.2 — screenshot recognition (OCR/visual estimates only)
+    detected_exchange: str | None = None
+    detected_platform: str | None = None
+    symbol_confidence: float | None = Field(default=None, ge=0.0, le=1.0)
+    timeframe_confidence: float | None = Field(default=None, ge=0.0, le=1.0)
+    observed_last_price: float | None = None
+    observed_price_confidence: float | None = Field(default=None, ge=0.0, le=1.0)
+    observed_price_label: str | None = None
     observations: list[VisionObservation] = Field(default_factory=list)
     visible_price_labels: list[str] = Field(default_factory=list)
     visible_indicators: list[str] = Field(default_factory=list)

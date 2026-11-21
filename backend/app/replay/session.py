@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import uuid
 from collections.abc import Awaitable, Callable
 from datetime import datetime, timezone
 
+from app.db.identity import new_replay_session_id
 from app.exchanges.types import Candle, ExchangeId, MarketType, Timeframe
 from app.replay.config import (
     DEFAULT_REPLAY_CONFIG,
@@ -57,7 +57,7 @@ class ReplaySession:
         config: ReplayConfig | None = None,
         on_event: BroadcastFn | None = None,
     ) -> None:
-        self.session_id = "rp_" + uuid.uuid4().hex[:16]
+        self.session_id = new_replay_session_id()
         self.exchange = exchange
         self.symbol = symbol.upper()
         self.market_type = market_type

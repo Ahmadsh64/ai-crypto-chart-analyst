@@ -39,10 +39,28 @@ export function OverviewPage() {
     refetchInterval: 30_000,
   });
 
+  const scannerStatus = useQuery({
+    queryKey: ["opportunities", "status"],
+    queryFn: ({ signal }) => api.opportunitiesStatus(signal),
+    refetchInterval: 30_000,
+  });
+
+  const recentHistory = useQuery({
+    queryKey: ["history", "overview-recent"],
+    queryFn: ({ signal }) => api.historyAnalyses({ limit: 5, offset: 0 }, signal),
+    refetchInterval: 60_000,
+    retry: false,
+  });
+
   const exchanges = useExchanges();
   const btcSeed = useTicker({ exchange, marketType, symbol: "BTC/USDT", refetchInterval: false });
   const ethSeed = useTicker({ exchange, marketType, symbol: "ETH/USDT", refetchInterval: false });
   const solSeed = useTicker({ exchange, marketType, symbol: "SOL/USDT", refetchInterval: false });
+
+  const longSetups = scannerStatus.data?.status.long_opportunities ?? 0;
+  const shortSetups = scannerStatus.data?.status.short_opportunities ?? 0;
+  const historyItems = recentHistory.data?.items ?? [];
+  const historyTotal = recentHistory.data?.total ?? 0;
 
   const btcLive = useLiveMarketStore((s) => s.tickers[tickerKey(exchange, marketType, "BTC/USDT")]);
   const ethLive = useLiveMarketStore((s) => s.tickers[tickerKey(exchange, marketType, "ETH/USDT")]);
@@ -100,7 +118,7 @@ export function OverviewPage() {
             href="/chart-analyzer"
             className="inline-flex items-center gap-2 rounded-md bg-terminal-accent px-4 py-2 text-sm font-medium text-terminal-bg transition hover:bg-terminal-accent/90"
           >
-            Open AI Chart Analyzer
+            Open AI Market Analyzer
             <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
@@ -132,22 +150,26 @@ export function OverviewPage() {
         />
         <StatTile
           label="Bullish Setups"
-          value="0"
-          hint="Decision engine in Phase 4"
+          value={String(longSetups)}
+          hint="From Market Opportunities scanner"
           tone="long"
           icon={<TrendingUp className="h-4 w-4 text-terminal-long" />}
         />
         <StatTile
           label="Bearish Setups"
-          value="0"
-          hint="Decision engine in Phase 4"
+          value={String(shortSetups)}
+          hint="From Market Opportunities scanner"
           tone="short"
           icon={<TrendingDown className="h-4 w-4 text-terminal-short" />}
         />
         <StatTile
-          label="Simulated Trades"
-          value="0"
-          hint="Journal in Phase 6"
+          label="Saved Analyses"
+          value={recentHistory.isError ? "—" : String(historyTotal)}
+          hint={
+            recentHistory.isError
+              ? "History unavailable (persistence optional)"
+              : "Persisted Analyze runs"
+          }
           icon={<Wallet className="h-4 w-4 text-terminal-muted" />}
         />
       </section>
@@ -223,13 +245,62 @@ export function OverviewPage() {
             <ScanSearch className="h-4 w-4 text-terminal-accent" />
             <h2 className="text-sm font-medium text-terminal-text">Recent AI Analyses</h2>
           </div>
-          <p className="mt-1 text-xs text-terminal-muted">Persisted analyses arrive with Phase 6</p>
-          <div className="mt-6 flex flex-col items-center justify-center rounded-md border border-dashed border-terminal-border px-4 py-10 text-center">
-            <p className="text-sm text-terminal-muted">No analyses yet</p>
-            <Link href="/live-market" className="mt-3 text-sm text-terminal-accent hover:underline">
-              Open live charts
-            </Link>
-          </div>
+          <p className="mt-1 text-xs text-terminal-muted">
+            From History · soft-persist on Analyze
+          </p>
+          {recentHistory.isLoading ? (
+            <p className="mt-4 text-sm text-terminal-muted">Loading…</p>
+          ) : recentHistory.isError ? (
+            <div className="mt-4 rounded-md border border-dashed border-terminal-border px-4 py-8 text-center">
+              <p className="text-sm text-terminal-muted">
+                Persistence offline or unavailable.
+              </p>
+              <Link
+                href="/chart-analyzer"
+                className="mt-3 inline-block text-sm text-terminal-accent hover:underline"
+              >
+                Open AI Market Analyzer
+              </Link>
+            </div>
+          ) : historyItems.length === 0 ? (
+            <div className="mt-4 flex flex-col items-center justify-center rounded-md border border-dashed border-terminal-border px-4 py-8 text-center">
+              <p className="text-sm text-terminal-muted">No saved analyses yet</p>
+              <Link
+                href="/chart-analyzer"
+                className="mt-3 text-sm text-terminal-accent hover:underline"
+              >
+                Run Analyze
+              </Link>
+            </div>
+          ) : (
+            <ul className="mt-4 divide-y divide-terminal-border">
+              {historyItems.map((item) => (
+                <li key={item.analysis_run_id} className="py-2.5">
+                  <Link
+                    href={`/history?run=${encodeURIComponent(item.analysis_run_id)}`}
+                    className="block hover:opacity-90"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="truncate text-sm font-medium text-terminal-text">
+                        {item.symbol}
+                      </span>
+                      <span className="shrink-0 text-[11px] uppercase tracking-wider text-terminal-muted">
+                        {item.decision}
+                      </span>
+                    </div>
+                    <p className="mt-0.5 text-[11px] text-terminal-muted">
+                      {format(new Date(item.analysis_timestamp), "MMM d · HH:mm")}
+                    </p>
+                  </Link>
+                </li>
+              ))}
+              <li className="pt-3">
+                <Link href="/history" className="text-sm text-terminal-accent hover:underline">
+                  View all history
+                </Link>
+              </li>
+            </ul>
+          )}
         </div>
       </section>
     </div>
