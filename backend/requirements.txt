@@ -39,6 +39,7 @@ python-dotenv==1.0.1
 orjson==3.10.12
 pillow==11.0.0
 PyJWT==2.10.1
+cryptography==44.0.0
 
 # Reporting (Phase 5.2.6)
 reportlab==4.2.5

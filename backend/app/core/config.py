@@ -85,11 +85,15 @@ class Settings(BaseSettings):
     # Demo / mock mode for UI development without live exchange calls
     demo_mode: bool = False
 
-    # --- Auth (Supabase Auth JWT) — server-only secrets; never NEXT_PUBLIC_ ---
+    # --- Auth (Supabase Auth JWT) — server-only; never put secrets in NEXT_PUBLIC_ ---
     # When false (default), REST/WS behave as unauthenticated local/dev/tests.
-    # Production personal beta MUST set AUTH_ENABLED=true with JWT secret + allowlist.
+    # Production: AUTH_ENABLED=true + SUPABASE_URL + SUPABASE_ANON_KEY + allowlist.
+    # ES256 verified via JWKS; legacy HS256 verified via Supabase Auth /auth/v1/user.
     auth_enabled: bool = False
     supabase_url: str = ""
+    # Public anon/publishable key (server-side copy for Auth user lookup). Not a private key.
+    supabase_anon_key: str = ""
+    # Optional / unused for verification when using JWKS + remote HS256 (kept for ops notes).
     supabase_jwt_secret: str = ""
     # Comma-separated owner emails allowed to use the API (case-insensitive).
     auth_allowed_emails: str = ""
@@ -107,6 +111,14 @@ class Settings(BaseSettings):
             for email in self.auth_allowed_emails.split(",")
             if email.strip()
         ]
+
+    @property
+    def supabase_auth_issuer(self) -> str:
+        return f"{self.supabase_url.rstrip('/')}/auth/v1"
+
+    @property
+    def supabase_jwks_url(self) -> str:
+        return f"{self.supabase_url.rstrip('/')}/auth/v1/.well-known/jwks.json"
 
     @property
     def openapi_docs_enabled(self) -> bool:

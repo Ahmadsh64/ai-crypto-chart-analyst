@@ -47,10 +47,12 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
         settings.auth_enabled,
     )
     if settings.auth_enabled and (
-        not settings.supabase_jwt_secret.strip() or not settings.auth_allowed_email_list
+        not settings.supabase_url.strip()
+        or not settings.supabase_anon_key.strip()
+        or not settings.auth_allowed_email_list
     ):
         logger.error(
-            "AUTH_ENABLED=true but SUPABASE_JWT_SECRET or AUTH_ALLOWED_EMAILS is missing"
+            "AUTH_ENABLED=true but SUPABASE_URL, SUPABASE_ANON_KEY, or AUTH_ALLOWED_EMAILS is missing"
         )
     await get_stream_manager().start()
     # Optional Supabase persistence — never blocks startup when disabled/unavailable

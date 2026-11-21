@@ -20,17 +20,17 @@ Vercel  (Next.js, Root Directory = frontend)
   │  NEXT_PUBLIC_SUPABASE_URL / ANON_KEY only
   ▼
 Render Web Service  (rootDir = backend)
-  │  AUTH_ENABLED=true → JWT verify (SUPABASE_JWT_SECRET) + AUTH_ALLOWED_EMAILS
-  │  CORS_ORIGINS = exact Vercel origin (not authentication)
+  │  AUTH_ENABLED=true → ES256 via JWKS + legacy HS256 via /auth/v1/user
+  │  AUTH_ALLOWED_EMAILS allowlist; CORS_ORIGINS = exact Vercel origin (not auth)
   │  /docs /redoc /openapi.json disabled in production
   │  GET /api/v1/health public (Render health check)
   ▼
 Supabase
-  ├── Auth (user accounts)
+  ├── Auth (user accounts; current signing key ES256 / P-256)
   └── PostgreSQL (Alembic 0001→0004, TLS CA verified)
 ```
 
-Secrets (`SUPABASE_JWT_SECRET`, `DATABASE_URL`, `OPENAI_API_KEY`, service role) stay on Render only.
+Secrets (`DATABASE_URL`, `OPENAI_API_KEY`, service role) stay on Render only. `SUPABASE_ANON_KEY` is public-by-design but configured server-side for Auth user lookup.
 
 ---
 
@@ -41,7 +41,7 @@ Secrets (`SUPABASE_JWT_SECRET`, `DATABASE_URL`, `OPENAI_API_KEY`, service role) 
 | Path | Change |
 |------|--------|
 | `backend/app/core/security.py` | Supabase JWT verify, REST dependency, WS auth |
-| `backend/app/core/config.py` | `AUTH_*`, `SUPABASE_JWT_SECRET`, docs flag |
+| `backend/app/core/config.py` | `AUTH_*`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, docs flag |
 | `backend/app/main.py` | Protect routers; disable docs in production |
 | `backend/app/api/routes/websocket.py` | Auth before market/replay WS |
 | `backend/requirements.txt` | `PyJWT==2.10.1` |
@@ -196,8 +196,9 @@ Set Production environment variables (section 7). Redeploy after Render URL is k
 | `CORS_ORIGINS` | No | Exact Vercel HTTPS origin |
 | `AUTH_ENABLED` | No | `true` in production |
 | `AUTH_ALLOWED_EMAILS` | **Yes (PII)** | Owner email allowlist (comma-separated) |
-| `SUPABASE_URL` | No | Project URL |
-| `SUPABASE_JWT_SECRET` | **Yes** | JWT secret for HS256 verification |
+| `SUPABASE_URL` | No | Project URL (JWKS + Auth issuer base) |
+| `SUPABASE_ANON_KEY` | Public-by-design | Anon/publishable key for legacy HS256 `/auth/v1/user` lookup |
+| `SUPABASE_JWT_SECRET` | Optional | Not used for ES256 JWKS or remote HS256 verification |
 | `DATABASE_URL` | **Yes** | `postgresql+asyncpg://…` |
 | `PERSISTENCE_ENABLED` | No | `true` when DB ready |
 | `SUPABASE_SSL_CA_FILE` | No | `prod-ca-2021.crt` |
@@ -216,18 +217,18 @@ Set Production environment variables (section 7). Redeploy after Render URL is k
 
 ### Never set on Vercel / never `NEXT_PUBLIC_`
 
-- `SUPABASE_JWT_SECRET`
 - `DATABASE_URL` / DB passwords
 - `OPENAI_API_KEY`
 - Supabase **service_role** key
+- Any JWT **private** signing key material
 
 ---
 
 ## 8. Authentication setup instructions
 
 1. Create the owner user in Supabase Auth (email + password).
-2. Set Render `AUTH_ALLOWED_EMAILS` to that exact email.
-3. Set Render `SUPABASE_JWT_SECRET` and `AUTH_ENABLED=true`.
+2. Confirm dashboard signing key is ECC P-256 (ES256) as expected; leave keys unchanged unless you intentionally rotate later.
+3. Set Render `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `AUTH_ALLOWED_EMAILS`, and `AUTH_ENABLED=true`.
 4. Set Vercel `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
 5. Open the Vercel app → `/login` → sign in.
 6. Confirm REST calls send `Authorization: Bearer …` and WS URLs include `access_token`.
@@ -267,7 +268,7 @@ Backend allowlist is authoritative: other Supabase users receive **403** even wi
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
 | CORS errors in browser | `CORS_ORIGINS` mismatch | Exact Vercel origin, https, no trailing slash |
-| 401 on all API calls after login | Wrong JWT secret or clock skew | Copy JWT secret from same Supabase project; check system time |
+| 401 on all API calls after login | Wrong `SUPABASE_URL` / JWKS unreachable / clock skew | Confirm URL matches project; check JWKS path; check system time |
 | 403 after login | Email not in `AUTH_ALLOWED_EMAILS` | Match email case-insensitively; update Render env |
 | WS connects then drops / fails | Missing `access_token` on WS URL | Ensure frontend built with Supabase session; redeploy Vercel |
 | Render health failing | Wrong health path / app crash | Use `/api/v1/health`; check Render logs |
